@@ -2,6 +2,8 @@ package com.ororura.model;
 
 import com.ororura.api.IPostContract;
 
+import java.util.List;
+
 public class Parcel {
     private String trackNumber;
     private String from;
@@ -16,6 +18,7 @@ public class Parcel {
     private String addressTo;
     private String addressFrom;
     private String currentOffice;
+    private List<String> employeeCheckoutParcel;
 
     public Parcel(String trackNumber, String from, String to, String type, String shippingClass, String deliveryTime, double weight, double declaredValue, String totalValue, String addressTo, String addressFrom, String currentOffice) {
         this.trackNumber = trackNumber;

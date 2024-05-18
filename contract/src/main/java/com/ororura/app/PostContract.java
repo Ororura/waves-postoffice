@@ -28,6 +28,7 @@ public class PostContract implements IPostContract {
     private final Mapping<List<Parcel>> parcelMapping;
     private final List<MoneyTransfer> monetTransferList = new ArrayList<>();
     private final List<Parcel> parcelList = new ArrayList<>();
+    private final List<Par>
     private final String owner;
 
 
@@ -48,6 +49,10 @@ public class PostContract implements IPostContract {
         this.contractState.put("CONTRACT_CALL", contractCall.getCaller());
         this.transferMoneyMapping.put("_", this.monetTransferList);
         this.parcelMapping.put("_", this.parcelList);
+    }
+
+    public void createPostOffices() {
+
     }
 
     @Override

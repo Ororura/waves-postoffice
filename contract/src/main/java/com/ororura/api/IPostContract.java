@@ -15,22 +15,25 @@ public interface IPostContract {
     void createUser(@InvokeParam(name = "user") User user);
 
     @ContractAction
-    void transferMoney(@InvokeParam(name = "money")MoneyTransfer moneyTransfer);
+    void transferMoney(@InvokeParam(name = "money") MoneyTransfer moneyTransfer);
 
     @ContractAction
     void acceptTransfer(@InvokeParam(name = "id") int id);
 
     @ContractAction
-    void deniedTransfer(@InvokeParam(name = "id")int id);
+    void deniedTransfer(@InvokeParam(name = "id") int id);
 
     @ContractAction
-    void setPostmanEmployee(@InvokeParam(name = "user")String user, @InvokeParam(name = "status")boolean status);
+    void setPostmanEmployee(@InvokeParam(name = "user") String user, @InvokeParam(name = "status") boolean status);
 
     @ContractAction
-    void changePersonalData(@InvokeParam(name = "user")User user);
+    void changePersonalData(@InvokeParam(name = "user") User user);
 
     @ContractAction
-    void sendPackage(@InvokeParam(name = "package")Parcel parcel);
+    void sendPackage(@InvokeParam(name = "package") Parcel parcel);
+
+    @ContractAction
+    void checkoutParcel(@InvokeParam(name = "parcelId") int parcelId);
 
     class PostOffice {
         public static final String POST_OFFICE = "POST_OFFICE";
