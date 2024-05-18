@@ -3,6 +3,7 @@ package com.ororura.app;
 import com.ororura.api.IPostContract;
 import com.ororura.model.MoneyTransfer;
 import com.ororura.model.Parcel;
+import com.ororura.model.PostOffice;
 import com.ororura.model.User;
 import com.ororura.utils.CalculateTotalCost;
 import com.wavesenterprise.sdk.contract.api.annotation.ContractHandler;
@@ -11,10 +12,7 @@ import com.wavesenterprise.sdk.contract.api.state.ContractState;
 import com.wavesenterprise.sdk.contract.api.state.TypeReference;
 import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static com.ororura.api.IPostContract.Keys.*;
 
@@ -28,7 +26,7 @@ public class PostContract implements IPostContract {
     private final Mapping<List<Parcel>> parcelMapping;
     private final List<MoneyTransfer> monetTransferList = new ArrayList<>();
     private final List<Parcel> parcelList = new ArrayList<>();
-    private final List<Par>
+    private final HashMap<Integer, com.ororura.model.PostOffice> postOfficeHashMap = new HashMap<>();
     private final String owner;
 
 
@@ -49,11 +47,21 @@ public class PostContract implements IPostContract {
         this.contractState.put("CONTRACT_CALL", contractCall.getCaller());
         this.transferMoneyMapping.put("_", this.monetTransferList);
         this.parcelMapping.put("_", this.parcelList);
+
+        this.postOfficeHashMap.put(344000, new com.ororura.model.PostOffice(344000, PostOffice.SORTING_CENTER));
+        this.postOfficeHashMap.put(347900, new com.ororura.model.PostOffice(347900, PostOffice.MAIN_POST_OFFICE));
+        this.postOfficeHashMap.put(347901, new com.ororura.model.PostOffice(347901, PostOffice.POST_OFFICE));
+        this.postOfficeHashMap.put(347902, new com.ororura.model.PostOffice(347902, PostOffice.POST_OFFICE));
+        this.postOfficeHashMap.put(347903, new com.ororura.model.PostOffice(347903, PostOffice.POST_OFFICE));
+        this.postOfficeHashMap.put(346770, new com.ororura.model.PostOffice(346770, PostOffice.MAIN_POST_OFFICE));
+        this.postOfficeHashMap.put(346771, new com.ororura.model.PostOffice(346771, PostOffice.POST_OFFICE));
     }
 
-    public void createPostOffices() {
-
+    @Override
+    public void checkoutParcel(int parcelId) {
+        //Доделать
     }
+
 
     @Override
     public void sendPackage(Parcel parcel) {

@@ -18,7 +18,7 @@ public class Parcel {
     private String addressTo;
     private String addressFrom;
     private String currentOffice;
-    private List<String> employeeCheckoutParcel;
+    private List<User> employeeCheckoutParcel;
 
     public Parcel(String trackNumber, String from, String to, String type, String shippingClass, String deliveryTime, double weight, double declaredValue, String totalValue, String addressTo, String addressFrom, String currentOffice) {
         this.trackNumber = trackNumber;
@@ -44,6 +44,14 @@ public class Parcel {
 
     public void setCurrentOffice(String currentOffice) {
         this.currentOffice = currentOffice;
+    }
+
+    public List<User> getEmployeeCheckoutParcel() {
+        return employeeCheckoutParcel;
+    }
+
+    public void setEmployeeCheckoutParcel(List<User> employeeCheckoutParcel) {
+        this.employeeCheckoutParcel = employeeCheckoutParcel;
     }
 
     public String getTrackNumber() {
