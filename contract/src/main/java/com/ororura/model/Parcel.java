@@ -9,7 +9,7 @@ public class Parcel {
     private String type;
     private String shippingClass;
     private String deliveryTime;
-    private String shippingCost;
+    private double shippingCost;
     private double weight;
     private double declaredValue = 0;
     private String totalValue;
@@ -17,14 +17,13 @@ public class Parcel {
     private String addressFrom;
     private String currentOffice;
 
-    public Parcel(String trackNumber, String from, String to, String type, String shippingClass, String deliveryTime, String shippingCost, double weight, double declaredValue, String totalValue, String addressTo, String addressFrom, String currentOffice) {
+    public Parcel(String trackNumber, String from, String to, String type, String shippingClass, String deliveryTime, double weight, double declaredValue, String totalValue, String addressTo, String addressFrom, String currentOffice) {
         this.trackNumber = trackNumber;
         this.from = from;
         this.to = to;
         this.type = type;
         this.shippingClass = shippingClass;
         this.deliveryTime = deliveryTime;
-        this.shippingCost = shippingCost;
         this.weight = weight;
         this.declaredValue = declaredValue;
         this.totalValue = totalValue;
@@ -92,11 +91,11 @@ public class Parcel {
         this.deliveryTime = deliveryTime;
     }
 
-    public String getShippingCost() {
+    public double getShippingCost() {
         return shippingCost;
     }
 
-    public void setShippingCost(String shippingCost) {
+    public void setShippingCost(double shippingCost) {
         this.shippingCost = shippingCost;
     }
 

@@ -2,7 +2,9 @@ package com.ororura.app;
 
 import com.ororura.api.IPostContract;
 import com.ororura.model.MoneyTransfer;
+import com.ororura.model.Parcel;
 import com.ororura.model.User;
+import com.ororura.utils.CalculateTotalCost;
 import com.wavesenterprise.sdk.contract.api.annotation.ContractHandler;
 import com.wavesenterprise.sdk.contract.api.domain.ContractCall;
 import com.wavesenterprise.sdk.contract.api.state.ContractState;
@@ -23,7 +25,9 @@ public class PostContract implements IPostContract {
     private final ContractCall contractCall;
     private final Mapping<User> userMapping;
     private final Mapping<List<MoneyTransfer>> transferMoneyMapping;
+    private final Mapping<List<Parcel>> parcelMapping;
     private final List<MoneyTransfer> monetTransferList = new ArrayList<>();
+    private final List<Parcel> parcelList = new ArrayList<>();
     private final String owner;
 
 
@@ -34,6 +38,8 @@ public class PostContract implements IPostContract {
         }, USERS_MAPPING);
         this.transferMoneyMapping = this.contractState.getMapping(new TypeReference<>() {
         }, TRANSFER_MONEY_MAPPING);
+        this.parcelMapping = this.contractState.getMapping(new TypeReference<List<Parcel>>() {
+        }, PARCEL_MAPPING);
         this.owner = contractCall.getCaller();
     }
 
@@ -41,6 +47,33 @@ public class PostContract implements IPostContract {
     public void init() {
         this.contractState.put("CONTRACT_CALL", contractCall.getCaller());
         this.transferMoneyMapping.put("_", this.monetTransferList);
+        this.parcelMapping.put("_", this.parcelList);
+    }
+
+    @Override
+    public void sendPackage(Parcel parcel) {
+        final double totalcost = CalculateTotalCost.calculateTotalCost(parcel);
+        Optional<User> userSender = this.userMapping.tryGet(this.contractCall.getCaller());
+        Optional<List<Parcel>> parcelList = this.parcelMapping.tryGet("_");
+
+        if (parcelList.isEmpty()) {
+            throw new IllegalStateException("Посылки не найдены!");
+        }
+
+        if (userSender.isEmpty()) {
+            throw new IllegalStateException("Пользователь не найден!");
+        }
+
+        if (totalcost > userSender.get().getBalance()) {
+            throw new IllegalStateException("У вас недостаточно токенов!");
+        }
+
+        userSender.get().setBalance(userSender.get().getBalance() - totalcost);
+        parcel.setShippingCost(totalcost);
+        parcelList.get().add(parcel);
+
+        this.userMapping.put(userSender.get().getBlockchainAddress(), userSender.get());
+        this.parcelMapping.put("_", parcelList.get());
     }
 
     @Override

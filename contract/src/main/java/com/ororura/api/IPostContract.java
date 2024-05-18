@@ -57,6 +57,7 @@ public interface IPostContract {
     class Keys {
         public static final String USERS_MAPPING = "USERS_MAPPING";
         public static final String TRANSFER_MONEY_MAPPING = "TRANSFER_MONEY_MAPPING";
+        public static final String PARCEL_MAPPING = "PARCEL_MAPPING";
 
     }
 
