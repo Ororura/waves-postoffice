@@ -59,7 +59,20 @@ public class PostContract implements IPostContract {
 
     @Override
     public void checkoutParcel(int parcelId) {
-        //Доделать
+        //TODO Доделать
+        Optional<User> userSender = this.userMapping.tryGet(this.contractCall.getCaller());
+
+        if(userSender.isEmpty()) {
+            throw new IllegalStateException("Пользователь не найден!");
+        }
+
+        Optional<List<Parcel>> optionalParcels = this.parcelMapping.tryGet("_");
+
+        if(optionalParcels.isEmpty()) {
+            throw new IllegalStateException("Посылки не найдены!");
+        }
+
+        if()
     }
 
 
