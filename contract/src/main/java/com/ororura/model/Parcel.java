@@ -17,10 +17,10 @@ public class Parcel {
     private String totalValue;
     private String addressTo;
     private String addressFrom;
-    private String currentOffice;
+    private int nextOffice;
     private List<User> employeeCheckoutParcel;
 
-    public Parcel(String trackNumber, String from, String to, String type, String shippingClass, String deliveryTime, double weight, double declaredValue, String totalValue, String addressTo, String addressFrom, String currentOffice) {
+    public Parcel(String trackNumber, String from, String to, String type, String shippingClass, String deliveryTime, double weight, double declaredValue, String totalValue, String addressTo, String addressFrom, int nextOffice) {
         this.trackNumber = trackNumber;
         this.from = from;
         this.to = to;
@@ -32,18 +32,19 @@ public class Parcel {
         this.totalValue = totalValue;
         this.addressTo = addressTo;
         this.addressFrom = addressFrom;
-        this.currentOffice = currentOffice;
+        this.nextOffice = nextOffice;
     }
 
     public Parcel() {
     }
 
-    public String getCurrentOffice() {
-        return currentOffice;
+
+    public int getNextOffice() {
+        return nextOffice;
     }
 
-    public void setCurrentOffice(String currentOffice) {
-        this.currentOffice = currentOffice;
+    public void setNextOffice(int nextOffice) {
+        this.nextOffice = nextOffice;
     }
 
     public List<User> getEmployeeCheckoutParcel() {

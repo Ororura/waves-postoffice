@@ -1,10 +1,7 @@
 package com.ororura.app;
 
 import com.ororura.api.IPostContract;
-import com.ororura.model.MoneyTransfer;
-import com.ororura.model.Parcel;
-import com.ororura.model.PostOffice;
-import com.ororura.model.User;
+import com.ororura.model.*;
 import com.ororura.utils.CalculateTotalCost;
 import com.wavesenterprise.sdk.contract.api.annotation.ContractHandler;
 import com.wavesenterprise.sdk.contract.api.domain.ContractCall;
@@ -15,6 +12,7 @@ import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping;
 import java.util.*;
 
 import static com.ororura.api.IPostContract.Keys.*;
+import static com.ororura.api.IPostContract.PostOfficeTypes.*;
 
 @ContractHandler
 public class PostContract implements IPostContract {
@@ -24,9 +22,10 @@ public class PostContract implements IPostContract {
     private final Mapping<User> userMapping;
     private final Mapping<List<MoneyTransfer>> transferMoneyMapping;
     private final Mapping<List<Parcel>> parcelMapping;
+    private final Mapping<HashMap<Integer, PostOffice>> postOfficeMapping;
     private final List<MoneyTransfer> monetTransferList = new ArrayList<>();
     private final List<Parcel> parcelList = new ArrayList<>();
-    private final HashMap<Integer, com.ororura.model.PostOffice> postOfficeHashMap = new HashMap<>();
+    private final HashMap<Integer, PostOffice> postOfficeHashMap = new HashMap<>();
     private final String owner;
 
 
@@ -40,6 +39,8 @@ public class PostContract implements IPostContract {
         this.parcelMapping = this.contractState.getMapping(new TypeReference<List<Parcel>>() {
         }, PARCEL_MAPPING);
         this.owner = contractCall.getCaller();
+        this.postOfficeMapping = this.contractState.getMapping(new TypeReference<>() {
+        }, OFFICE_MAPPING);
     }
 
     @Override
@@ -47,32 +48,46 @@ public class PostContract implements IPostContract {
         this.contractState.put("CONTRACT_CALL", contractCall.getCaller());
         this.transferMoneyMapping.put("_", this.monetTransferList);
         this.parcelMapping.put("_", this.parcelList);
+        this.postOfficeMapping.put("_", this.postOfficeHashMap);
 
-        this.postOfficeHashMap.put(344000, new com.ororura.model.PostOffice(344000, PostOffice.SORTING_CENTER));
-        this.postOfficeHashMap.put(347900, new com.ororura.model.PostOffice(347900, PostOffice.MAIN_POST_OFFICE));
-        this.postOfficeHashMap.put(347901, new com.ororura.model.PostOffice(347901, PostOffice.POST_OFFICE));
-        this.postOfficeHashMap.put(347902, new com.ororura.model.PostOffice(347902, PostOffice.POST_OFFICE));
-        this.postOfficeHashMap.put(347903, new com.ororura.model.PostOffice(347903, PostOffice.POST_OFFICE));
-        this.postOfficeHashMap.put(346770, new com.ororura.model.PostOffice(346770, PostOffice.MAIN_POST_OFFICE));
-        this.postOfficeHashMap.put(346771, new com.ororura.model.PostOffice(346771, PostOffice.POST_OFFICE));
+        this.postOfficeHashMap.put(344000, new PostOffice(344000, SORTING_CENTER));
+        this.postOfficeHashMap.put(347900, new PostOffice(347900, MAIN_POST_OFFICE));
+        this.postOfficeHashMap.put(347901, new PostOffice(347901, POST_OFFICE));
+        this.postOfficeHashMap.put(347902, new PostOffice(347902, POST_OFFICE));
+        this.postOfficeHashMap.put(347903, new PostOffice(347903, POST_OFFICE));
+        this.postOfficeHashMap.put(346770, new PostOffice(346770, MAIN_POST_OFFICE));
+        this.postOfficeHashMap.put(346771, new PostOffice(346771, POST_OFFICE));
     }
 
     @Override
-    public void checkoutParcel(int parcelId) {
+    public void checkoutParcel(int parcelId, int nextPostId) {
         //TODO Доделать
         Optional<User> userSender = this.userMapping.tryGet(this.contractCall.getCaller());
+        Optional<HashMap<Integer, PostOffice>> postOffice = this.postOfficeMapping.tryGet("");
 
-        if(userSender.isEmpty()) {
+        if(postOffice.isEmpty()) {
+            throw new IllegalStateException("Офисы не найдены!");
+        }
+
+        if (userSender.isEmpty()) {
             throw new IllegalStateException("Пользователь не найден!");
         }
 
         Optional<List<Parcel>> optionalParcels = this.parcelMapping.tryGet("_");
 
-        if(optionalParcels.isEmpty()) {
+        if (optionalParcels.isEmpty()) {
             throw new IllegalStateException("Посылки не найдены!");
         }
 
-        if()
+        int userPostId = Integer.parseInt(userSender.get().getPostId().replaceFirst("RR", ""));
+
+        if (!(userPostId == postOffice.get().get(userPostId).getPostNumber())) {
+            throw new IllegalStateException("Id офиса не совпадает с id пользователя");
+        }
+
+        optionalParcels.get().get(parcelId).setNextOffice(nextPostId);
+        AcceptedParcel acceptedParcel = new AcceptedParcel();
+        acceptedParcel.setParcel(optionalParcels.get().get(parcelId));
     }
 
 
@@ -103,12 +118,12 @@ public class PostContract implements IPostContract {
     }
 
     @Override
-    public void setPostmanEmployee(String sender, boolean status) {
+    public void setPostmanEmployee(String employee, int postOfficeId, boolean status) {
         if (!Objects.equals(this.owner, contractCall.getCaller())) {
             throw new IllegalStateException("Вы не администратор!");
         }
         ;
-        Optional<User> user = this.userMapping.tryGet(sender);
+        Optional<User> user = this.userMapping.tryGet(employee);
 
         if (user.isEmpty()) {
             throw new IllegalStateException("Пользователь не найден!");
@@ -116,6 +131,8 @@ public class PostContract implements IPostContract {
 
         if (status) {
             user.get().setRole(Role.EMPLOYEE);
+
+
         } else {
             user.get().setRole(Role.USER);
 

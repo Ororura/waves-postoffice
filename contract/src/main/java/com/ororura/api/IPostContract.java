@@ -24,7 +24,7 @@ public interface IPostContract {
     void deniedTransfer(@InvokeParam(name = "id") int id);
 
     @ContractAction
-    void setPostmanEmployee(@InvokeParam(name = "user") String user, @InvokeParam(name = "status") boolean status);
+    void setPostmanEmployee(@InvokeParam(name = "user") String employee, @InvokeParam(name = "postOfficeId")int postOfficeId, @InvokeParam(name = "status") boolean status);
 
     @ContractAction
     void changePersonalData(@InvokeParam(name = "user") User user);
@@ -33,9 +33,9 @@ public interface IPostContract {
     void sendPackage(@InvokeParam(name = "package") Parcel parcel);
 
     @ContractAction
-    void checkoutParcel(@InvokeParam(name = "parcelId") int parcelId);
+    void checkoutParcel(@InvokeParam(name = "parcelId") int parcelId, @InvokeParam(name = "nextPostId") int nextPostId);
 
-    class PostOffice {
+    class PostOfficeTypes {
         public static final String POST_OFFICE = "POST_OFFICE";
         public static final String MAIN_POST_OFFICE = "MAIN_POST_OFFICE";
         public static final String SORTING_CENTER = "SORTING_CENTER";
@@ -61,6 +61,7 @@ public interface IPostContract {
         public static final String USERS_MAPPING = "USERS_MAPPING";
         public static final String TRANSFER_MONEY_MAPPING = "TRANSFER_MONEY_MAPPING";
         public static final String PARCEL_MAPPING = "PARCEL_MAPPING";
+        public static final String OFFICE_MAPPING = "OFFICE_MAPPING";
 
     }
 

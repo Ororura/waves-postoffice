@@ -1,7 +1,7 @@
 const data = {
   image: "registry.hub.docker.com/ororura/waves:1.0.0",
   fee: 0,
-  imageHash: "c79b9148ae1e916aba31695507e9230ab55ace56e90ca3cc7be31270a25aa34b",
+  imageHash: "b811882c027f86c0827f50a8abd2673020f14f4f0300fbf9cec41c2a6f2f94c2",
   type: 103,
   params: [
     {
@@ -41,7 +41,7 @@ const newUser = {
 
 const fetchQuery = async (data, url) => {
   try {
-    const response = await fetch(`http://localhost:6862${url}`, {
+    const response = await fetch(`http://localhost:6882${url}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json;charset=utf-8",
@@ -57,4 +57,4 @@ const fetchQuery = async (data, url) => {
 
 //fetchQuery(data, "/transactions/signAndBroadcast");
 
-fetchQuery(newUser, "/transactions/signAndBroadcast");
+fetchQuery(data, "/transactions/signAndBroadcast");
