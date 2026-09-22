@@ -6,12 +6,12 @@ import com.ororura.domain.repository.ContractMetadataRepository;
 import com.ororura.domain.repository.PostOfficeRepository;
 import java.util.HashMap;
 
-public final class InitializationService {
+public final class ContractInitializationService {
   private final ContractMetadataRepository metadata;
   private final PostOfficeRepository offices;
   private final ContractContext context;
 
-  public InitializationService(
+  public ContractInitializationService(
       ContractMetadataRepository metadata, PostOfficeRepository offices, ContractContext context) {
     this.metadata = metadata;
     this.offices = offices;

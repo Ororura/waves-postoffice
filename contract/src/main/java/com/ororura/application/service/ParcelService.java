@@ -7,7 +7,7 @@ import com.ororura.domain.model.ParcelStatus;
 import com.ororura.domain.model.ParcelTransit;
 import com.ororura.domain.model.PostOffice;
 import com.ororura.domain.model.User;
-import com.ororura.domain.pricing.CalculateTotalCost;
+import com.ororura.domain.pricing.ShippingCostCalculator;
 import com.ororura.domain.repository.ParcelRepository;
 import com.ororura.domain.repository.UserRepository;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ public final class ParcelService {
     if (parcels.existsByTrackingNumber(parcel.getTrackNumber())) {
       throw new IllegalStateException("Трек-номер уже существует");
     }
-    long cost = CalculateTotalCost.calculateTotalCost(parcel);
+    long cost = ShippingCostCalculator.calculateTotalCost(parcel);
     sender.debit(cost);
     parcel.assignSender(context.caller());
     parcel.assignShippingCost(cost);

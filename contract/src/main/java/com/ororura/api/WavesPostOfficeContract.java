@@ -12,7 +12,7 @@ import com.wavesenterprise.sdk.contract.api.state.ContractState;
 
 @ContractHandler
 public class WavesPostOfficeContract implements PostOfficeContract {
-  private final InitializationService initialization;
+  private final ContractInitializationService initialization;
   private final UserService users;
   private final TransferService transfers;
   private final ParcelService parcels;

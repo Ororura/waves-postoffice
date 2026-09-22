@@ -15,7 +15,7 @@ class CalculateTotalCostTest {
     parcel.setWeight(2.5);
     parcel.setDeclaredValue(0);
 
-    long cost = CalculateTotalCost.calculateTotalCost(parcel);
+    long cost = ShippingCostCalculator.calculateTotalCost(parcel);
 
     assertEquals(125, cost);
   }
@@ -28,7 +28,7 @@ class CalculateTotalCostTest {
     parcel.setWeight(-10);
 
     assertThrows(
-        IllegalArgumentException.class, () -> CalculateTotalCost.calculateTotalCost(parcel));
+        IllegalArgumentException.class, () -> ShippingCostCalculator.calculateTotalCost(parcel));
   }
 
   @Test
@@ -39,6 +39,6 @@ class CalculateTotalCostTest {
     parcel.setWeight(5);
 
     assertThrows(
-        IllegalArgumentException.class, () -> CalculateTotalCost.calculateTotalCost(parcel));
+        IllegalArgumentException.class, () -> ShippingCostCalculator.calculateTotalCost(parcel));
   }
 }
