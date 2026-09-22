@@ -17,11 +17,11 @@ dependencies {
 
 tasks.withType<ShadowJar> {
     manifest {
-        attributes["Main-Class"] = "com.ororura.Dispatcher"
+        attributes["Main-Class"] = "com.ororura.bootstrap.Dispatcher"
     }
 }
 
-project.setProperty("mainClassName", "com.ororura.Dispatcher")
+project.setProperty("mainClassName", "com.ororura.bootstrap.Dispatcher")
 
 
 tasks.test {

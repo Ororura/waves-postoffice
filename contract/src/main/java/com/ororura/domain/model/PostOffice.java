@@ -1,4 +1,4 @@
-package com.ororura.model;
+package com.ororura.domain.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,7 +7,7 @@ import java.util.List;
 public class PostOffice {
     private int postNumber;
     private String officeType;
-    private final HashMap<String, User> usersInOffice = new HashMap();
+    private final HashMap<String, User> usersInOffice = new HashMap<>();
     private final List<AcceptedParcel> acceptedParcel = new ArrayList<>();
 
     public PostOffice(int postNumber, String officeType) {

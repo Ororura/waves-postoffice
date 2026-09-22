@@ -1,4 +1,4 @@
-package com.ororura.model;
+package com.ororura.domain.model;
 
 public class Transit {
     private User handlingEmployee;

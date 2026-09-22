@@ -1,4 +1,4 @@
-package com.ororura.model;
+package com.ororura.domain.model;
 
 import static com.ororura.api.IPostContract.Role.USER;
 

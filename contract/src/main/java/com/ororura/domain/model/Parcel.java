@@ -1,4 +1,4 @@
-package com.ororura.model;
+package com.ororura.domain.model;
 
 import com.ororura.api.IPostContract;
 

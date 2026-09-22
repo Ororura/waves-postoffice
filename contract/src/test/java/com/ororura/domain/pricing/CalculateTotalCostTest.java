@@ -1,6 +1,6 @@
-package com.ororura.utils;
+package com.ororura.domain.pricing;
 
-import com.ororura.model.Parcel;
+import com.ororura.domain.model.Parcel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,7 +1,7 @@
-package com.ororura;
+package com.ororura.bootstrap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ororura.app.PostContract;
+import com.ororura.api.PostContract;
 import com.wavesenterprise.sdk.contract.core.dispatch.ContractDispatcher;
 import com.wavesenterprise.sdk.contract.grpc.GrpcJacksonContractDispatcherBuilder;
 

@@ -1,8 +1,8 @@
-package com.ororura.app;
+package com.ororura.api;
 
 import com.ororura.api.IPostContract;
-import com.ororura.model.*;
-import com.ororura.utils.CalculateTotalCost;
+import com.ororura.domain.model.*;
+import com.ororura.domain.pricing.CalculateTotalCost;
 import com.wavesenterprise.sdk.contract.api.annotation.ContractHandler;
 import com.wavesenterprise.sdk.contract.api.domain.ContractCall;
 import com.wavesenterprise.sdk.contract.api.state.ContractState;

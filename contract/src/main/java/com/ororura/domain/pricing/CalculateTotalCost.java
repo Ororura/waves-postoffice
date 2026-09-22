@@ -1,6 +1,6 @@
-package com.ororura.utils;
+package com.ororura.domain.pricing;
 
-import com.ororura.model.Parcel;
+import com.ororura.domain.model.Parcel;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import static com.ororura.api.IPostContract.ParcelType.*;
