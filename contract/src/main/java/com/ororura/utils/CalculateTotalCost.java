@@ -1,24 +1,28 @@
 package com.ororura.utils;
 
 import com.ororura.model.Parcel;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import static com.ororura.api.IPostContract.ParcelType.*;
 
-import static com.ororura.api.IPostContract.ParcelType.PARCEL;
-import static com.ororura.api.IPostContract.ParcelType.LETTER;
-import static com.ororura.api.IPostContract.ParcelType.BANDEROLKA;
+public final class CalculateTotalCost {
+    private CalculateTotalCost() {}
 
-
-public class CalculateTotalCost {
     public static double calculateTotalCost(Parcel parcel) {
-        double baseCost = getBasedCost(parcel.getType());
-        return baseCost * parcel.getWeight() + parcel.getDeclaredValue() * 0.1;
-    }
-
-    private static double getBasedCost(String classType ) {
-        return switch (classType) {
-            case LETTER -> 0.1;
-            case BANDEROLKA -> 0.3;
-            case PARCEL -> 0.5;
-            default -> 0;
+        if (parcel == null || parcel.getType() == null || !Double.isFinite(parcel.getWeight()) || parcel.getWeight() <= 0
+                || !Double.isFinite(parcel.getDeclaredValue()) || parcel.getDeclaredValue() < 0) {
+            throw new IllegalArgumentException("Некорректный вес или объявленная стоимость");
+        }
+        BigDecimal rate = switch (parcel.getType()) {
+            case LETTER -> new BigDecimal("0.1");
+            case BANDEROLKA -> new BigDecimal("0.3");
+            case PARCEL -> new BigDecimal("0.5");
+            default -> throw new IllegalArgumentException("Неизвестный тип отправления");
         };
+        return rate.multiply(BigDecimal.valueOf(parcel.getWeight()))
+                .add(BigDecimal.valueOf(parcel.getDeclaredValue())
+                        .multiply(new BigDecimal("0.1")))
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 }

@@ -58,7 +58,8 @@ public class User {
     }
 
     public void setPostId(String postId) {
-        this.postId = "RR" + postId;
+        this.postId = postId == null || postId.isBlank() ? null :
+                (postId.startsWith("RR") ? postId : "RR" + postId);
     }
 
     public String getRole() {
