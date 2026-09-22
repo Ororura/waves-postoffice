@@ -22,6 +22,11 @@ public final class ContractStateParcelRepository implements ParcelRepository {
   }
 
   @Override
+  public boolean existsByTrackingNumber(String trackingNumber) {
+    return findAll().stream().anyMatch(parcel -> trackingNumber.equals(parcel.getTrackNumber()));
+  }
+
+  @Override
   public void saveAll(List<Parcel> parcels) {
     mapping.put("_", parcels);
   }

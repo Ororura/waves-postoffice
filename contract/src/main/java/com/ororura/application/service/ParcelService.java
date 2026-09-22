@@ -42,8 +42,7 @@ public final class ParcelService {
     offices.requireOffice(parcel.getNextOffice());
     User sender = userService.requireUser(context.caller());
     List<Parcel> all = parcels.findAll();
-    if (all.stream()
-        .anyMatch(existing -> parcel.getTrackNumber().equals(existing.getTrackNumber()))) {
+    if (parcels.existsByTrackingNumber(parcel.getTrackNumber())) {
       throw new IllegalStateException("Трек-номер уже существует");
     }
     double cost = CalculateTotalCost.calculateTotalCost(parcel);
