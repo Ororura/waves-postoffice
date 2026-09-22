@@ -11,4 +11,4 @@ RUN apk --no-cache add curl
 
 COPY build/libs/*-all.jar /app/app.jar
 
-CMD ["/bin/sh", "-c", "exec java $JAVA_MEM $JAVA_OPTS -jar /app/app.jar"]
+CMD ["/bin/sh", "-c", "if [ -n \"${SET_ENV_CMD:-}\" ]; then eval \"$SET_ENV_CMD\"; fi; exec java $JAVA_MEM $JAVA_OPTS -jar /app/app.jar"]
