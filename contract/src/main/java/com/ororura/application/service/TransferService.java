@@ -5,7 +5,6 @@ import com.ororura.domain.model.MoneyTransfer;
 import com.ororura.domain.model.User;
 import com.ororura.domain.repository.TransferRepository;
 import com.ororura.domain.repository.UserRepository;
-import java.util.List;
 
 public final class TransferService {
   private final TransferRepository transfers;
@@ -24,58 +23,39 @@ public final class TransferService {
     this.context = context;
   }
 
-  private MoneyTransfer requireTransferByIndex(List<MoneyTransfer> all, int id) {
-    if (id < 0 || id >= all.size()) {
-      throw new IllegalArgumentException("Перевод не найден: " + id);
-    }
-    return all.get(id);
-  }
-
-  public void transferMoney(MoneyTransfer request) {
-    if (request == null) {
-      throw new IllegalArgumentException("Не указан перевод");
-    }
-    String caller = context.caller();
-    User sender = userService.requireUser(caller);
-    if (request.getTo() == null || request.getTo().isBlank() || caller.equals(request.getTo())) {
-      throw new IllegalArgumentException("Некорректный получатель");
-    }
+  public int transferMoney(MoneyTransfer request) {
+    if (request == null) throw new IllegalArgumentException("Не указан перевод");
+    String senderAddress = context.caller();
+    User sender = userService.requireUser(senderAddress);
     userService.requireUser(request.getTo());
     MoneyTransfer transfer =
-        MoneyTransfer.create(caller, request.getTo(), request.getAmount(), request.getLifeTime());
-    if (sender.getBalance() < transfer.getAmount()) {
+        MoneyTransfer.create(
+            senderAddress, request.getTo(), request.getAmount(), request.getLifeTime());
+    if (sender.getBalance() < transfer.getAmount())
       throw new IllegalStateException("Недостаточно средств");
-    }
-    List<MoneyTransfer> all = transfers.findAll();
-    all.add(transfer);
-    transfers.saveAll(all);
+    return transfers.create(transfer);
   }
 
   public void acceptTransfer(int id) {
-    List<MoneyTransfer> all = transfers.findAll();
-    MoneyTransfer transfer = requireTransferByIndex(all, id);
+    MoneyTransfer transfer = transfers.requireById(id);
     transfer.requireRecipient(context.caller());
     transfer.requireActive();
     User.requirePositive(transfer.getAmount());
-
     User sender = userService.requireUser(transfer.getFrom());
     User recipient = userService.requireUser(context.caller());
-    // Validate both balances before changing either object.
     Math.addExact(recipient.getBalance(), transfer.getAmount());
     sender.debit(transfer.getAmount());
     recipient.credit(transfer.getAmount());
     transfer.accept();
-
     users.save(sender);
     users.save(recipient);
-    transfers.saveAll(all);
+    transfers.save(id, transfer);
   }
 
   public void deniedTransfer(int id) {
-    List<MoneyTransfer> all = transfers.findAll();
-    MoneyTransfer transfer = requireTransferByIndex(all, id);
+    MoneyTransfer transfer = transfers.requireById(id);
     transfer.requireRecipient(context.caller());
     transfer.reject();
-    transfers.saveAll(all);
+    transfers.save(id, transfer);
   }
 }

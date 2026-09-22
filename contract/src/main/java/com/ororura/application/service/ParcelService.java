@@ -4,13 +4,13 @@ import com.ororura.application.context.ContractContext;
 import com.ororura.application.security.AccessPolicy;
 import com.ororura.domain.model.AcceptedParcel;
 import com.ororura.domain.model.Parcel;
+import com.ororura.domain.model.ParcelStatus;
 import com.ororura.domain.model.PostOffice;
 import com.ororura.domain.model.User;
 import com.ororura.domain.pricing.CalculateTotalCost;
 import com.ororura.domain.repository.ParcelRepository;
 import com.ororura.domain.repository.UserRepository;
 import java.util.HashMap;
-import java.util.List;
 
 public final class ParcelService {
   private final ParcelRepository parcels;
@@ -41,24 +41,19 @@ public final class ParcelService {
     }
     offices.requireOffice(parcel.getNextOffice());
     User sender = userService.requireUser(context.caller());
-    List<Parcel> all = parcels.findAll();
     if (parcels.existsByTrackingNumber(parcel.getTrackNumber())) {
       throw new IllegalStateException("Трек-номер уже существует");
     }
     long cost = CalculateTotalCost.calculateTotalCost(parcel);
-    if (cost <= 0) {
-      throw new IllegalArgumentException("Некорректная стоимость доставки");
-    }
     sender.debit(cost);
     parcel.assignSender(context.caller());
     parcel.assignShippingCost(cost);
-    parcel.setStatus(com.ororura.domain.model.ParcelStatus.ACCEPTED);
-    all.add(parcel);
+    parcel.setStatus(ParcelStatus.ACCEPTED);
     users.save(sender);
-    parcels.saveAll(all);
+    parcels.save(parcel);
   }
 
-  public void checkoutParcel(int parcelId, int nextOfficeId) {
+  public void checkoutParcel(String trackingNumber, int nextOfficeId) {
     User employee = userService.requireUser(context.caller());
     access.requireEmployee(employee);
     int currentOfficeId;
@@ -72,14 +67,17 @@ public final class ParcelService {
     if (current == null || !postOffices.containsKey(nextOfficeId)) {
       throw new IllegalArgumentException("Отделение не найдено");
     }
-    List<Parcel> allParcels = parcels.findAll();
-    if (parcelId < 0 || parcelId >= allParcels.size()) {
-      throw new IllegalArgumentException("Посылка не найдена: " + parcelId);
+    Parcel parcel =
+        parcels
+            .findByTrackingNumber(trackingNumber)
+            .orElseThrow(
+                () -> new IllegalArgumentException("Посылка не найдена: " + trackingNumber));
+    if (parcel.getNextOffice() != currentOfficeId || currentOfficeId == nextOfficeId) {
+      throw new IllegalStateException("Неверное направление передачи посылки");
     }
-    Parcel parcel = allParcels.get(parcelId);
     parcel.routeToOffice(nextOfficeId);
     current.acceptParcel(new AcceptedParcel(parcel, employee));
-    parcels.saveAll(allParcels);
+    parcels.save(parcel);
     offices.saveAll(postOffices);
   }
 }

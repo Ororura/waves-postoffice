@@ -41,7 +41,7 @@ public interface IPostContract {
 
   @ContractAction
   void checkoutParcel(
-      @InvokeParam(name = "parcelId") int parcelId,
+      @InvokeParam(name = "trackingNumber") String trackingNumber,
       @InvokeParam(name = "nextPostId") int nextPostId);
 
   class PostOfficeTypes {

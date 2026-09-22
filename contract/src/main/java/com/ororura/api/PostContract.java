@@ -70,7 +70,7 @@ public class PostContract implements IPostContract {
   }
 
   @Override
-  public void checkoutParcel(int parcelId, int nextPostId) {
-    parcels.checkoutParcel(parcelId, nextPostId);
+  public void checkoutParcel(String trackingNumber, int nextPostId) {
+    parcels.checkoutParcel(trackingNumber, nextPostId);
   }
 }

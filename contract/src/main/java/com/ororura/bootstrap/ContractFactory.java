@@ -28,8 +28,7 @@ public final class ContractFactory {
     userService = new UserService(users, officeService, context, access);
     transferService = new TransferService(transfers, users, userService, context);
     parcelService = new ParcelService(parcels, users, userService, officeService, context, access);
-    initializationService =
-        new InitializationService(metadata, parcels, transfers, offices, context);
+    initializationService = new InitializationService(metadata, offices, context);
   }
 
   public UserService users() {
