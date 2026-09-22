@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 
 plugins {
+    id("com.diffplug.spotless") version "6.25.0"
     application
     java
     id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -26,4 +27,13 @@ project.setProperty("mainClassName", "com.ororura.bootstrap.Dispatcher")
 
 tasks.test {
     useJUnitPlatform()
+}
+
+
+// Java 17-compatible formatter; formatting must not change contract semantics.
+spotless {
+    java {
+        target("src/**/*.java")
+        googleJavaFormat("1.19.2")
+    }
 }

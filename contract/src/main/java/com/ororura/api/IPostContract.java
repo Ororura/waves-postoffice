@@ -8,70 +8,73 @@ import com.wavesenterprise.sdk.contract.api.annotation.ContractInit;
 import com.wavesenterprise.sdk.contract.api.annotation.InvokeParam;
 
 public interface IPostContract {
-    @ContractInit
-    void init();
+  @ContractInit
+  void init();
 
-    @ContractAction
-    void createUser(@InvokeParam(name = "user") User user);
+  @ContractAction
+  void createUser(@InvokeParam(name = "user") User user);
 
-    @ContractAction
-    void creditUser(@InvokeParam(name = "user") String address,
-                    @InvokeParam(name = "amount") double amount);
+  @ContractAction
+  void creditUser(
+      @InvokeParam(name = "user") String address, @InvokeParam(name = "amount") double amount);
 
-    @ContractAction
-    void transferMoney(@InvokeParam(name = "money") MoneyTransfer moneyTransfer);
+  @ContractAction
+  void transferMoney(@InvokeParam(name = "money") MoneyTransfer moneyTransfer);
 
-    @ContractAction
-    void acceptTransfer(@InvokeParam(name = "id") int id);
+  @ContractAction
+  void acceptTransfer(@InvokeParam(name = "id") int id);
 
-    @ContractAction
-    void deniedTransfer(@InvokeParam(name = "id") int id);
+  @ContractAction
+  void deniedTransfer(@InvokeParam(name = "id") int id);
 
-    @ContractAction
-    void setPostmanEmployee(@InvokeParam(name = "user") String employee, @InvokeParam(name = "postOfficeId")int postOfficeId, @InvokeParam(name = "status") boolean status);
+  @ContractAction
+  void setPostmanEmployee(
+      @InvokeParam(name = "user") String employee,
+      @InvokeParam(name = "postOfficeId") int postOfficeId,
+      @InvokeParam(name = "status") boolean status);
 
-    @ContractAction
-    void changePersonalData(@InvokeParam(name = "user") User user);
+  @ContractAction
+  void changePersonalData(@InvokeParam(name = "user") User user);
 
-    @ContractAction
-    void sendPackage(@InvokeParam(name = "package") Parcel parcel);
+  @ContractAction
+  void sendPackage(@InvokeParam(name = "package") Parcel parcel);
 
-    @ContractAction
-    void checkoutParcel(@InvokeParam(name = "parcelId") int parcelId, @InvokeParam(name = "nextPostId") int nextPostId);
+  @ContractAction
+  void checkoutParcel(
+      @InvokeParam(name = "parcelId") int parcelId,
+      @InvokeParam(name = "nextPostId") int nextPostId);
 
-    class PostOfficeTypes {
-        public static final String POST_OFFICE = "POST_OFFICE";
-        public static final String MAIN_POST_OFFICE = "MAIN_POST_OFFICE";
-        public static final String SORTING_CENTER = "SORTING_CENTER";
-    }
+  class PostOfficeTypes {
+    public static final String POST_OFFICE = "POST_OFFICE";
+    public static final String MAIN_POST_OFFICE = "MAIN_POST_OFFICE";
+    public static final String SORTING_CENTER = "SORTING_CENTER";
+  }
 
-    class ConvertDate {
-        public static final int DAY = 5;
-    }
+  class ConvertDate {
+    public static final int DAY = 5;
+  }
 
-    class Role {
-        public static final String USER = "USER";
-        public static final String EMPLOYEE = "EMPLOYEE";
-    }
+  class Role {
+    public static final String USER = "USER";
+    public static final String EMPLOYEE = "EMPLOYEE";
+  }
 
-    class ParcelType {
-        public static final String LETTER = "LETTER";
-        public static final String BANDEROLKA = "BANDEROLKA";
-        public static final String PARCEL = "PARCEL";
+  class ParcelType {
+    public static final String LETTER = "LETTER";
+    public static final String BANDEROLKA = "BANDEROLKA";
+    public static final String PARCEL = "PARCEL";
+  }
 
-    }
+  class Keys {
+    public static final String USERS_MAPPING = "USERS_MAPPING";
+    public static final String TRANSFER_MONEY_MAPPING = "TRANSFER_MONEY_MAPPING";
+    public static final String PARCEL_MAPPING = "PARCEL_MAPPING";
+    public static final String OFFICE_MAPPING = "OFFICE_MAPPING";
+  }
 
-    class Keys {
-        public static final String USERS_MAPPING = "USERS_MAPPING";
-        public static final String TRANSFER_MONEY_MAPPING = "TRANSFER_MONEY_MAPPING";
-        public static final String PARCEL_MAPPING = "PARCEL_MAPPING";
-        public static final String OFFICE_MAPPING = "OFFICE_MAPPING";
-
-    }
-
-    class DateSupply {
-        public static final int LETTER = 5;
-        public static final int BANDEROLKA = 10;
-        public static final int PARCEL = 15;
-    }
+  class DateSupply {
+    public static final int LETTER = 5;
+    public static final int BANDEROLKA = 10;
+    public static final int PARCEL = 15;
+  }
 }

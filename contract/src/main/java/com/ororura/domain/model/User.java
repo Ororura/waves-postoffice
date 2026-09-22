@@ -3,70 +3,71 @@ package com.ororura.domain.model;
 import static com.ororura.domain.model.UserRole.USER;
 
 public class User {
-    private String name;
-    private String homeAddress;
-    private String blockchainAddress;
-    private double balance;
-    private String role = USER;
-    private String postId;
+  private String name;
+  private String homeAddress;
+  private String blockchainAddress;
+  private double balance;
+  private String role = USER;
+  private String postId;
 
-    public User(String name, String homeAddress, String blockchainAddress, int balance, String role) {
-        this.name = name;
-        this.homeAddress = homeAddress;
-        this.blockchainAddress = blockchainAddress;
-        this.balance = balance;
-        this.role = role;
-    }
+  public User(String name, String homeAddress, String blockchainAddress, int balance, String role) {
+    this.name = name;
+    this.homeAddress = homeAddress;
+    this.blockchainAddress = blockchainAddress;
+    this.balance = balance;
+    this.role = role;
+  }
 
-    public User() {
-    }
+  public User() {}
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getBlockchainAddress() {
-        return blockchainAddress;
-    }
+  public String getBlockchainAddress() {
+    return blockchainAddress;
+  }
 
-    public void setBlockchainAddress(String blockchainAddress) {
-        this.blockchainAddress = blockchainAddress;
-    }
+  public void setBlockchainAddress(String blockchainAddress) {
+    this.blockchainAddress = blockchainAddress;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getHomeAddress() {
-        return homeAddress;
-    }
+  public String getHomeAddress() {
+    return homeAddress;
+  }
 
-    public void setHomeAddress(String homeAddress) {
-        this.homeAddress = homeAddress;
-    }
+  public void setHomeAddress(String homeAddress) {
+    this.homeAddress = homeAddress;
+  }
 
-    public double getBalance() {
-        return balance;
-    }
+  public double getBalance() {
+    return balance;
+  }
 
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
+  public void setBalance(double balance) {
+    this.balance = balance;
+  }
 
-    public String getPostId() {
-        return postId;
-    }
+  public String getPostId() {
+    return postId;
+  }
 
-    public void setPostId(String postId) {
-        this.postId = postId == null || postId.isBlank() ? null :
-                (postId.startsWith("RR") ? postId : "RR" + postId);
-    }
+  public void setPostId(String postId) {
+    this.postId =
+        postId == null || postId.isBlank()
+            ? null
+            : (postId.startsWith("RR") ? postId : "RR" + postId);
+  }
 
-    public String getRole() {
-        return role;
-    }
+  public String getRole() {
+    return role;
+  }
 
-    public void setRole(String role) {
-        this.role = role;
-    }
+  public void setRole(String role) {
+    this.role = role;
+  }
 }
