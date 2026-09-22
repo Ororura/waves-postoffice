@@ -3,7 +3,6 @@ package com.ororura.application.service;
 import com.ororura.application.context.ContractContext;
 import com.ororura.application.security.AccessPolicy;
 import com.ororura.domain.model.User;
-import com.ororura.domain.model.UserRole;
 import com.ororura.domain.repository.UserRepository;
 
 public final class UserService {
@@ -34,28 +33,21 @@ public final class UserService {
 
   public void createUser(User request) {
     String caller = context.caller();
-    if (request == null || request.getName() == null || request.getName().isBlank()) {
-      throw new IllegalArgumentException("Укажите имя пользователя");
+    if (request == null) {
+      throw new IllegalArgumentException("Не указан пользователь");
     }
     if (users.findByAddress(caller).isPresent()) {
       throw new IllegalStateException("Пользователь уже зарегистрирован");
     }
-    User user = new User();
-    user.setBlockchainAddress(caller);
-    user.setName(request.getName());
-    user.setHomeAddress(request.getHomeAddress());
-    user.setBalance(0);
-    user.setRole(UserRole.USER);
-    users.save(user);
+    users.save(User.register(caller, request.getName(), request.getHomeAddress()));
   }
 
   public void changePersonalData(User request) {
-    User user = requireUser(context.caller());
-    if (request == null || request.getName() == null || request.getName().isBlank()) {
-      throw new IllegalArgumentException("Укажите имя пользователя");
+    if (request == null) {
+      throw new IllegalArgumentException("Не указан пользователь");
     }
-    user.setName(request.getName());
-    user.setHomeAddress(request.getHomeAddress());
+    User user = requireUser(context.caller());
+    user.changeProfile(request.getName(), request.getHomeAddress());
     users.save(user);
   }
 
@@ -64,22 +56,17 @@ public final class UserService {
     User user = requireUser(employee);
     if (enabled) {
       offices.requireOffice(officeId);
-      user.setRole(UserRole.EMPLOYEE);
-      user.setPostId(String.valueOf(officeId));
+      user.assignToOffice(officeId);
     } else {
-      user.setRole(UserRole.USER);
-      user.setPostId(null);
+      user.removeFromOffice();
     }
     users.save(user);
   }
 
   public void creditUser(String address, double amount) {
     access.requireOwner();
-    TransferService.requirePositiveAmount(amount);
     User user = requireUser(address);
-    double result = user.getBalance() + amount;
-    if (!Double.isFinite(result)) throw new IllegalStateException("Переполнение баланса");
-    user.setBalance(result);
+    user.credit(amount);
     users.save(user);
   }
 }

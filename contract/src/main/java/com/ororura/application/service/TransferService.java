@@ -24,37 +24,28 @@ public final class TransferService {
     this.context = context;
   }
 
-  public static void requirePositiveAmount(double amount) {
-    if (!Double.isFinite(amount) || amount <= 0) {
-      throw new IllegalArgumentException("Сумма должна быть положительной и конечной");
+  private MoneyTransfer requireTransferByIndex(List<MoneyTransfer> all, int id) {
+    if (id < 0 || id >= all.size()) {
+      throw new IllegalArgumentException("Перевод не найден: " + id);
     }
-  }
-
-  private MoneyTransfer byIndex(List<MoneyTransfer> all, int id) {
-    if (id < 0 || id >= all.size()) throw new IllegalArgumentException("Перевод не найден: " + id);
     return all.get(id);
   }
 
   public void transferMoney(MoneyTransfer request) {
+    if (request == null) {
+      throw new IllegalArgumentException("Не указан перевод");
+    }
     String caller = context.caller();
     User sender = userService.requireUser(caller);
-    if (request == null
-        || request.getTo() == null
-        || request.getTo().isBlank()
-        || caller.equals(request.getTo())) {
+    if (request.getTo() == null || request.getTo().isBlank() || caller.equals(request.getTo())) {
       throw new IllegalArgumentException("Некорректный получатель");
     }
     userService.requireUser(request.getTo());
-    requirePositiveAmount(request.getAmount());
-    if (sender.getBalance() < request.getAmount()) {
+    MoneyTransfer transfer =
+        MoneyTransfer.create(caller, request.getTo(), request.getAmount(), request.getLifeTime());
+    if (!Double.isFinite(sender.getBalance()) || sender.getBalance() < transfer.getAmount()) {
       throw new IllegalStateException("Недостаточно средств");
     }
-    MoneyTransfer transfer = new MoneyTransfer();
-    transfer.setFrom(caller);
-    transfer.setTo(request.getTo());
-    transfer.setAmount(request.getAmount());
-    transfer.setLifeTime(request.getLifeTime());
-    transfer.setActive(true);
     List<MoneyTransfer> all = transfers.findAll();
     all.add(transfer);
     transfers.saveAll(all);
@@ -62,22 +53,22 @@ public final class TransferService {
 
   public void acceptTransfer(int id) {
     List<MoneyTransfer> all = transfers.findAll();
-    MoneyTransfer transfer = byIndex(all, id);
-    String caller = context.caller();
-    if (!caller.equals(transfer.getTo()))
-      throw new SecurityException("Нельзя принять чужой перевод");
-    if (!transfer.isActive()) throw new IllegalStateException("Перевод уже обработан");
-    requirePositiveAmount(transfer.getAmount());
+    MoneyTransfer transfer = requireTransferByIndex(all, id);
+    transfer.requireRecipient(context.caller());
+    transfer.requireActive();
+    User.requirePositiveFinite(transfer.getAmount());
+
     User sender = userService.requireUser(transfer.getFrom());
-    User recipient = userService.requireUser(caller);
-    if (sender.getBalance() < transfer.getAmount()) {
-      throw new IllegalStateException("Недостаточно средств у отправителя");
-    }
+    User recipient = userService.requireUser(context.caller());
+    // Validate both balances before changing either object.
     double recipientBalance = recipient.getBalance() + transfer.getAmount();
-    if (!Double.isFinite(recipientBalance)) throw new IllegalStateException("Переполнение баланса");
-    sender.setBalance(sender.getBalance() - transfer.getAmount());
-    recipient.setBalance(recipientBalance);
-    transfer.setActive(false);
+    if (!Double.isFinite(recipientBalance) || !Double.isFinite(recipient.getBalance())) {
+      throw new IllegalStateException("Переполнение баланса");
+    }
+    sender.debit(transfer.getAmount());
+    recipient.credit(transfer.getAmount());
+    transfer.accept();
+
     users.save(sender);
     users.save(recipient);
     transfers.saveAll(all);
@@ -85,12 +76,9 @@ public final class TransferService {
 
   public void deniedTransfer(int id) {
     List<MoneyTransfer> all = transfers.findAll();
-    MoneyTransfer transfer = byIndex(all, id);
-    if (!context.caller().equals(transfer.getTo())) {
-      throw new SecurityException("Нельзя отклонить чужой перевод");
-    }
-    if (!transfer.isActive()) throw new IllegalStateException("Перевод уже обработан");
-    transfer.setActive(false);
+    MoneyTransfer transfer = requireTransferByIndex(all, id);
+    transfer.requireRecipient(context.caller());
+    transfer.reject();
     transfers.saveAll(all);
   }
 }

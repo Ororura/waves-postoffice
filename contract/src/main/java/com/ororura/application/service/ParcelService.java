@@ -42,17 +42,17 @@ public final class ParcelService {
     offices.requireOffice(parcel.getNextOffice());
     User sender = userService.requireUser(context.caller());
     List<Parcel> all = parcels.findAll();
-    if (all.stream().anyMatch(p -> parcel.getTrackNumber().equals(p.getTrackNumber()))) {
+    if (all.stream()
+        .anyMatch(existing -> parcel.getTrackNumber().equals(existing.getTrackNumber()))) {
       throw new IllegalStateException("Трек-номер уже существует");
     }
     double cost = CalculateTotalCost.calculateTotalCost(parcel);
     if (!Double.isFinite(cost) || cost <= 0) {
       throw new IllegalArgumentException("Некорректная стоимость доставки");
     }
-    if (sender.getBalance() < cost) throw new IllegalStateException("Недостаточно средств");
-    parcel.setFrom(context.caller());
-    parcel.setShippingCost(cost);
-    sender.setBalance(sender.getBalance() - cost);
+    sender.debit(cost);
+    parcel.assignSender(context.caller());
+    parcel.assignShippingCost(cost);
     all.add(parcel);
     users.save(sender);
     parcels.saveAll(all);
@@ -67,9 +67,9 @@ public final class ParcelService {
     } catch (NumberFormatException e) {
       throw new IllegalStateException("Некорректное отделение сотрудника", e);
     }
-    HashMap<Integer, PostOffice> allOffices = offices.all();
-    PostOffice current = allOffices.get(currentOfficeId);
-    if (current == null || !allOffices.containsKey(nextOfficeId)) {
+    HashMap<Integer, PostOffice> postOffices = offices.all();
+    PostOffice current = postOffices.get(currentOfficeId);
+    if (current == null || !postOffices.containsKey(nextOfficeId)) {
       throw new IllegalArgumentException("Отделение не найдено");
     }
     List<Parcel> allParcels = parcels.findAll();
@@ -77,9 +77,9 @@ public final class ParcelService {
       throw new IllegalArgumentException("Посылка не найдена: " + parcelId);
     }
     Parcel parcel = allParcels.get(parcelId);
-    parcel.setNextOffice(nextOfficeId);
-    current.getAcceptedParcel().add(new AcceptedParcel(parcel, employee));
+    parcel.routeToOffice(nextOfficeId);
+    current.acceptParcel(new AcceptedParcel(parcel, employee));
     parcels.saveAll(allParcels);
-    offices.saveAll(allOffices);
+    offices.saveAll(postOffices);
   }
 }
