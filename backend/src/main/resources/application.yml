@@ -1,0 +1,21 @@
+server:
+  address: 127.0.0.1 # Sandbox only: do not expose unprotected API to the internet
+  port: 8081
+
+blockchain:
+  node-url: ${WE_NODE_URL:http://127.0.0.1:6862}
+  contract-id: ${WE_CONTRACT_ID:}
+  api-key: ${WE_API_KEY:}
+  # LOCAL SANDBOX ONLY: never place wallet passwords in application.yml or Git.
+  owner-address: ${WE_OWNER_ADDRESS:}
+  owner-node-url: ${WE_OWNER_NODE_URL:http://127.0.0.1:6862}
+  owner-password: ${WE_OWNER_PASSWORD:__UNCONFIGURED__}
+  recipient-address: ${WE_RECIPIENT_ADDRESS:}
+  recipient-node-url: ${WE_RECIPIENT_NODE_URL:http://127.0.0.1:6882}
+  recipient-password: ${WE_RECIPIENT_PASSWORD:__UNCONFIGURED__}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
