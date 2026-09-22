@@ -1,16 +1,16 @@
 package com.ororura.domain.model;
 
 /** A deterministic parcel transit record. Sequence is local to the parcel. */
-public class ParcelTransit {
+public class ParcelMovement {
   private String trackingNumber;
   private int fromOfficeId;
   private int toOfficeId;
   private String employeeAddress;
   private int sequence;
 
-  public ParcelTransit() {}
+  public ParcelMovement() {}
 
-  public ParcelTransit(
+  public ParcelMovement(
       String trackingNumber,
       int fromOfficeId,
       int toOfficeId,

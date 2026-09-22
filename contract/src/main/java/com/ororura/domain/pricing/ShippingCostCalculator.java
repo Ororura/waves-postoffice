@@ -7,8 +7,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /** All amounts are in hundredths of the existing logical token. */
-public final class CalculateTotalCost {
-  private CalculateTotalCost() {}
+public final class ShippingCostCalculator {
+  private ShippingCostCalculator() {}
 
   public static long calculateTotalCost(Parcel parcel) {
     if (parcel == null

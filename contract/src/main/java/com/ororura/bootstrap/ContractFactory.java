@@ -14,7 +14,7 @@ public final class ContractFactory {
   private final TransferService transferService;
   private final ParcelService parcelService;
   private final PostOfficeService officeService;
-  private final InitializationService initializationService;
+  private final ContractInitializationService initializationService;
 
   public ContractFactory(ContractState state, ContractCall call) {
     ContractContext context = new WavesContractContext(call);
@@ -28,7 +28,7 @@ public final class ContractFactory {
     userService = new UserService(users, officeService, context, access);
     transferService = new TransferService(transfers, users, userService, context);
     parcelService = new ParcelService(parcels, users, userService, officeService, context, access);
-    initializationService = new InitializationService(metadata, offices, context);
+    initializationService = new ContractInitializationService(metadata, offices, context);
   }
 
   public UserService users() {
@@ -43,7 +43,7 @@ public final class ContractFactory {
     return parcelService;
   }
 
-  public InitializationService initialization() {
+  public ContractInitializationService initialization() {
     return initializationService;
   }
 }

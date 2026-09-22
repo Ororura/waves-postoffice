@@ -11,13 +11,13 @@ import com.wavesenterprise.sdk.contract.api.domain.ContractCall;
 import com.wavesenterprise.sdk.contract.api.state.ContractState;
 
 @ContractHandler
-public class PostContract implements IPostContract {
-  private final InitializationService initialization;
+public class WavesPostOfficeContract implements PostOfficeContract {
+  private final ContractInitializationService initialization;
   private final UserService users;
   private final TransferService transfers;
   private final ParcelService parcels;
 
-  public PostContract(ContractState state, ContractCall call) {
+  public WavesPostOfficeContract(ContractState state, ContractCall call) {
     ContractFactory factory = new ContractFactory(state, call);
     initialization = factory.initialization();
     users = factory.users();

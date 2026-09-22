@@ -3,11 +3,11 @@ package com.ororura.application.service;
 import com.ororura.application.context.ContractContext;
 import com.ororura.application.security.AccessPolicy;
 import com.ororura.domain.model.Parcel;
+import com.ororura.domain.model.ParcelMovement;
 import com.ororura.domain.model.ParcelStatus;
-import com.ororura.domain.model.ParcelTransit;
 import com.ororura.domain.model.PostOffice;
 import com.ororura.domain.model.User;
-import com.ororura.domain.pricing.CalculateTotalCost;
+import com.ororura.domain.pricing.ShippingCostCalculator;
 import com.ororura.domain.repository.ParcelRepository;
 import com.ororura.domain.repository.UserRepository;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ public final class ParcelService {
     if (parcels.existsByTrackingNumber(parcel.getTrackNumber())) {
       throw new IllegalStateException("Трек-номер уже существует");
     }
-    long cost = CalculateTotalCost.calculateTotalCost(parcel);
+    long cost = ShippingCostCalculator.calculateTotalCost(parcel);
     sender.debit(cost);
     parcel.assignSender(context.caller());
     parcel.assignShippingCost(cost);
@@ -75,7 +75,8 @@ public final class ParcelService {
     if (parcel.getNextOffice() != currentOfficeId || currentOfficeId == nextOfficeId) {
       throw new IllegalStateException("Неверное направление передачи посылки");
     }
-    ParcelTransit event = parcel.transferViaOffice(currentOfficeId, nextOfficeId, context.caller());
+    ParcelMovement event =
+        parcel.transferViaOffice(currentOfficeId, nextOfficeId, context.caller());
     current.recordTransit(event);
     parcels.save(parcel);
     offices.saveAll(postOffices);
