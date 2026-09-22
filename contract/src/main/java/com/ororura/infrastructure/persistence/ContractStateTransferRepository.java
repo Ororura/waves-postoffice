@@ -12,7 +12,7 @@ public final class ContractStateTransferRepository implements TransferRepository
 
   public ContractStateTransferRepository(ContractState state) {
     transfers = state.getMapping(new TypeReference<MoneyTransfer>() {}, "TRANSFER_V2");
-    counter = state.getMapping(new TypeReference<Integer>() {}, "TRANSFER_COUNTER_V2");
+    counter = state.getMapping(Integer.class, "TRANSFER_COUNTER_V2");
   }
 
   @Override
