@@ -26,7 +26,7 @@ public class PostContract implements IPostContract {
     private final List<MoneyTransfer> monetTransferList = new ArrayList<>();
     private final List<Parcel> parcelList = new ArrayList<>();
     private final HashMap<Integer, PostOffice> postOfficeHashMap = new HashMap<>();
-    private final String owner;
+    private final Mapping<String> ownerMapping;
 
 
     public PostContract(ContractState contractState, ContractCall contractCall) {
@@ -38,213 +38,264 @@ public class PostContract implements IPostContract {
         }, TRANSFER_MONEY_MAPPING);
         this.parcelMapping = this.contractState.getMapping(new TypeReference<List<Parcel>>() {
         }, PARCEL_MAPPING);
-        this.owner = contractCall.getCaller();
+        this.ownerMapping = contractState.getMapping(
+                new TypeReference<String>() {}, "CONTRACT_META");
         this.postOfficeMapping = this.contractState.getMapping(new TypeReference<>() {
         }, OFFICE_MAPPING);
     }
 
     @Override
     public void init() {
-        this.contractState.put("CONTRACT_CALL", contractCall.getCaller());
-        this.transferMoneyMapping.put("_", this.monetTransferList);
-        this.parcelMapping.put("_", this.parcelList);
-        this.postOfficeMapping.put("_", this.postOfficeHashMap);
+        if (ownerMapping.tryGet("OWNER").isPresent()) {
+            throw new IllegalStateException("Контракт уже инициализирован");
+        }
+        ownerMapping.put("OWNER", contractCall.getCaller());
+        contractState.put("CONTRACT_CALL", contractCall.getCaller());
+        transferMoneyMapping.put("_", new ArrayList<>());
+        parcelMapping.put("_", new ArrayList<>());
 
-        this.postOfficeHashMap.put(344000, new PostOffice(344000, SORTING_CENTER));
-        this.postOfficeHashMap.put(347900, new PostOffice(347900, MAIN_POST_OFFICE));
-        this.postOfficeHashMap.put(347901, new PostOffice(347901, POST_OFFICE));
-        this.postOfficeHashMap.put(347902, new PostOffice(347902, POST_OFFICE));
-        this.postOfficeHashMap.put(347903, new PostOffice(347903, POST_OFFICE));
-        this.postOfficeHashMap.put(346770, new PostOffice(346770, MAIN_POST_OFFICE));
-        this.postOfficeHashMap.put(346771, new PostOffice(346771, POST_OFFICE));
+        HashMap<Integer, PostOffice> offices = new HashMap<>();
+        offices.put(344000, new PostOffice(344000, SORTING_CENTER));
+        offices.put(347900, new PostOffice(347900, MAIN_POST_OFFICE));
+        offices.put(347901, new PostOffice(347901, POST_OFFICE));
+        offices.put(347902, new PostOffice(347902, POST_OFFICE));
+        offices.put(347903, new PostOffice(347903, POST_OFFICE));
+        offices.put(346770, new PostOffice(346770, MAIN_POST_OFFICE));
+        offices.put(346771, new PostOffice(346771, POST_OFFICE));
+        postOfficeMapping.put("_", offices);
     }
 
     @Override
     public void checkoutParcel(int parcelId, int nextPostId) {
-        //TODO Доделать
-        Optional<User> userSender = this.userMapping.tryGet(this.contractCall.getCaller());
-        Optional<HashMap<Integer, PostOffice>> postOffice = this.postOfficeMapping.tryGet("");
-
-        if(postOffice.isEmpty()) {
-            throw new IllegalStateException("Офисы не найдены!");
+        User employee = requireUser(contractCall.getCaller());
+        if (!Role.EMPLOYEE.equals(employee.getRole()) || employee.getPostId() == null) {
+            throw new SecurityException("Действие доступно сотруднику отделения");
         }
-
-        if (userSender.isEmpty()) {
-            throw new IllegalStateException("Пользователь не найден!");
+        int currentOfficeId;
+        try {
+            currentOfficeId = Integer.parseInt(employee.getPostId().replaceFirst("^RR", ""));
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("Некорректное отделение сотрудника", e);
         }
-
-        Optional<List<Parcel>> optionalParcels = this.parcelMapping.tryGet("_");
-
-        if (optionalParcels.isEmpty()) {
-            throw new IllegalStateException("Посылки не найдены!");
+        HashMap<Integer, PostOffice> offices = requireOffices();
+        PostOffice current = offices.get(currentOfficeId);
+        if (current == null || !offices.containsKey(nextPostId)) {
+            throw new IllegalArgumentException("Отделение не найдено");
         }
-
-        int userPostId = Integer.parseInt(userSender.get().getPostId().replaceFirst("RR", ""));
-
-        if (!(userPostId == postOffice.get().get(userPostId).getPostNumber())) {
-            throw new IllegalStateException("Id офиса не совпадает с id пользователя");
-        }
-
-        optionalParcels.get().get(parcelId).setNextOffice(nextPostId);
-        AcceptedParcel acceptedParcel = new AcceptedParcel();
-        acceptedParcel.setParcel(optionalParcels.get().get(parcelId));
+        List<Parcel> parcels = requireParcels();
+        Parcel parcel = getByIndex(parcels, parcelId, "Посылка");
+        // Полноценная проверка маршрута потребует отдельного currentOffice/status в Parcel.
+        parcel.setNextOffice(nextPostId);
+        current.getAcceptedParcel().add(new AcceptedParcel(parcel, employee));
+        parcelMapping.put("_", parcels);
+        postOfficeMapping.put("_", offices);
     }
 
 
     @Override
     public void sendPackage(Parcel parcel) {
-        final double totalcost = CalculateTotalCost.calculateTotalCost(parcel);
-        Optional<User> userSender = this.userMapping.tryGet(this.contractCall.getCaller());
-        Optional<List<Parcel>> parcelList = this.parcelMapping.tryGet("_");
-
-        if (parcelList.isEmpty()) {
-            throw new IllegalStateException("Посылки не найдены!");
+        if (parcel == null || parcel.getTrackNumber() == null || parcel.getTrackNumber().isBlank()) {
+            throw new IllegalArgumentException("Укажите трек-номер");
         }
-
-        if (userSender.isEmpty()) {
-            throw new IllegalStateException("Пользователь не найден!");
+        requireOffice(parcel.getNextOffice());
+        User sender = requireUser(contractCall.getCaller());
+        List<Parcel> parcels = requireParcels();
+        if (parcels.stream().anyMatch(existing ->
+                parcel.getTrackNumber().equals(existing.getTrackNumber()))) {
+            throw new IllegalStateException("Трек-номер уже существует");
         }
-
-        if (totalcost > userSender.get().getBalance()) {
-            throw new IllegalStateException("У вас недостаточно токенов!");
+        double totalCost = CalculateTotalCost.calculateTotalCost(parcel);
+        if (!Double.isFinite(totalCost) || totalCost <= 0) {
+            throw new IllegalArgumentException("Некорректная стоимость доставки");
         }
-
-        userSender.get().setBalance(userSender.get().getBalance() - totalcost);
-        parcel.setShippingCost(totalcost);
-        parcelList.get().add(parcel);
-
-        this.userMapping.put(userSender.get().getBlockchainAddress(), userSender.get());
-        this.parcelMapping.put("_", parcelList.get());
+        if (sender.getBalance() < totalCost) {
+            throw new IllegalStateException("Недостаточно средств");
+        }
+        parcel.setFrom(contractCall.getCaller());
+        parcel.setShippingCost(totalCost);
+        sender.setBalance(sender.getBalance() - totalCost);
+        parcels.add(parcel);
+        userMapping.put(sender.getBlockchainAddress(), sender);
+        parcelMapping.put("_", parcels);
     }
 
     @Override
     public void setPostmanEmployee(String employee, int postOfficeId, boolean status) {
-        if (!Objects.equals(this.owner, contractCall.getCaller())) {
-            throw new IllegalStateException("Вы не администратор!");
-        }
-        ;
-        Optional<User> user = this.userMapping.tryGet(employee);
-
-        if (user.isEmpty()) {
-            throw new IllegalStateException("Пользователь не найден!");
-        }
-
+        requireOwner();
+        User user = requireUser(employee);
         if (status) {
-            user.get().setRole(Role.EMPLOYEE);
-
-
+            requireOffice(postOfficeId);
+            user.setRole(Role.EMPLOYEE);
+            user.setPostId(String.valueOf(postOfficeId));
         } else {
-            user.get().setRole(Role.USER);
-
+            user.setRole(Role.USER);
+            user.setPostId(null);
         }
-
-        this.userMapping.put(user.get().getBlockchainAddress(), user.get());
+        userMapping.put(employee, user);
     }
 
     @Override
-    public void transferMoney(MoneyTransfer moneyTransfer) {
-        Optional<List<MoneyTransfer>> findedMoneyTransferMapping = this.transferMoneyMapping.tryGet("_");
-
-        if (findedMoneyTransferMapping.isEmpty()) {
-            throw new IllegalStateException("Список не найден!");
+    public void transferMoney(MoneyTransfer request) {
+        String caller = contractCall.getCaller();
+        User sender = requireUser(caller);
+        if (request == null || request.getTo() == null || request.getTo().isBlank()
+                || caller.equals(request.getTo())) {
+            throw new IllegalArgumentException("Некорректный получатель");
         }
-
-        findedMoneyTransferMapping.get().add(moneyTransfer);
-        this.transferMoneyMapping.put("_", findedMoneyTransferMapping.get());
-
+        requireUser(request.getTo());
+        requirePositiveAmount(request.getAmount());
+        if (sender.getBalance() < request.getAmount()) {
+            throw new IllegalStateException("Недостаточно средств");
+        }
+        MoneyTransfer transfer = new MoneyTransfer();
+        transfer.setFrom(caller);
+        transfer.setTo(request.getTo());
+        transfer.setAmount(request.getAmount());
+        transfer.setLifeTime(request.getLifeTime());
+        transfer.setActive(true);
+        List<MoneyTransfer> transfers = requireTransfers();
+        transfers.add(transfer);
+        transferMoneyMapping.put("_", transfers);
     }
 
     @Override
-    public void changePersonalData(User user) {
-        Optional<User> foundedUser = this.userMapping.tryGet(this.contractCall.getCaller());
-
-        if (foundedUser.isEmpty()) {
-            throw new IllegalStateException("Пользователь не найден!");
+    public void changePersonalData(User request) {
+        User user = requireUser(contractCall.getCaller());
+        if (request == null || request.getName() == null || request.getName().isBlank()) {
+            throw new IllegalArgumentException("Укажите имя пользователя");
         }
-
-        if (Objects.equals(foundedUser.get().getBlockchainAddress(), this.contractCall.getCaller())) {
-            throw new IllegalStateException("Вы не можете изменить чужие данные!");
-        }
-
-        this.userMapping.put(user.getBlockchainAddress(), user);
+        user.setName(request.getName());
+        user.setHomeAddress(request.getHomeAddress());
+        // Адрес, роль, отделение и баланс клиент менять не может.
+        userMapping.put(contractCall.getCaller(), user);
     }
 
     @Override
     public void acceptTransfer(int id) {
-        Optional<List<MoneyTransfer>> findedMoneyTransferMapping = this.transferMoneyMapping.tryGet("_");
-        Optional<User> acceptUser = this.userMapping.tryGet(this.contractCall.getCaller());
-
-        if (acceptUser.isEmpty()) {
-            throw new IllegalStateException("пользователь не найден!");
+        List<MoneyTransfer> transfers = requireTransfers();
+        MoneyTransfer transfer = getByIndex(transfers, id, "Перевод");
+        String caller = contractCall.getCaller();
+        if (!caller.equals(transfer.getTo())) {
+            throw new SecurityException("Нельзя принять чужой перевод");
         }
-
-
-        if (findedMoneyTransferMapping.isEmpty()) {
-            throw new IllegalStateException("Список не найден!");
+        if (!transfer.isActive()) {
+            throw new IllegalStateException("Перевод уже обработан");
         }
-
-        if (!Objects.equals(findedMoneyTransferMapping.get().get(id).getTo(), this.contractCall.getCaller())) {
-            throw new IllegalStateException("Вы не можете принять чужой перевод!");
+        requirePositiveAmount(transfer.getAmount());
+        User sender = requireUser(transfer.getFrom());
+        User recipient = requireUser(caller);
+        if (sender.getBalance() < transfer.getAmount()) {
+            throw new IllegalStateException("Недостаточно средств у отправителя");
         }
-
-        Optional<User> senderUser = this.userMapping.tryGet(findedMoneyTransferMapping.get().get(id).getFrom());
-
-        if (senderUser.isEmpty()) {
-            throw new IllegalStateException("пользователь не найден!");
+        double senderBalance = sender.getBalance() - transfer.getAmount();
+        double recipientBalance = recipient.getBalance() + transfer.getAmount();
+        if (!Double.isFinite(recipientBalance)) {
+            throw new IllegalStateException("Переполнение баланса");
         }
-
-        if (!findedMoneyTransferMapping.get().get(id).isActive()) {
-            throw new IllegalStateException("Перевод не активен!");
-        }
-
-        acceptUser.get().setBalance(acceptUser.get().getBalance() + findedMoneyTransferMapping.get().get(id).getAmount());
-        senderUser.get().setBalance(senderUser.get().getBalance() - findedMoneyTransferMapping.get().get(id).getAmount());
-        findedMoneyTransferMapping.get().get(id).setActive(false);
-        this.userMapping.put(acceptUser.get().getBlockchainAddress(), acceptUser.get());
-        this.userMapping.put(acceptUser.get().getBlockchainAddress(), acceptUser.get());
-        this.transferMoneyMapping.put("", findedMoneyTransferMapping.get());
+        sender.setBalance(senderBalance);
+        recipient.setBalance(recipientBalance);
+        transfer.setActive(false);
+        userMapping.put(sender.getBlockchainAddress(), sender);
+        userMapping.put(recipient.getBlockchainAddress(), recipient);
+        transferMoneyMapping.put("_", transfers);
     }
 
     @Override
     public void deniedTransfer(int id) {
-        Optional<List<MoneyTransfer>> findedMoneyTransferMapping = this.transferMoneyMapping.tryGet("_");
-        Optional<User> acceptUser = this.userMapping.tryGet(this.contractCall.getCaller());
-
-        if (acceptUser.isEmpty()) {
-            throw new IllegalStateException("Пользователь не найден!");
+        List<MoneyTransfer> transfers = requireTransfers();
+        MoneyTransfer transfer = getByIndex(transfers, id, "Перевод");
+        if (!contractCall.getCaller().equals(transfer.getTo())) {
+            throw new SecurityException("Нельзя отклонить чужой перевод");
         }
-
-
-        if (findedMoneyTransferMapping.isEmpty()) {
-            throw new IllegalStateException("Список не найден!");
+        if (!transfer.isActive()) {
+            throw new IllegalStateException("Перевод уже обработан");
         }
-
-        if (!Objects.equals(findedMoneyTransferMapping.get().get(id).getTo(), this.contractCall.getCaller())) {
-            throw new IllegalStateException("Вы не можете принять чужой перевод!");
-        }
-
-        Optional<User> senderUser = this.userMapping.tryGet(findedMoneyTransferMapping.get().get(id).getFrom());
-
-        if (senderUser.isEmpty()) {
-            throw new IllegalStateException("Пользователь не найден!");
-        }
-
-        if (Objects.equals(senderUser.get().getBlockchainAddress(), findedMoneyTransferMapping.get().get(id).getFrom()) || Objects.equals(acceptUser.get().getBlockchainAddress(), findedMoneyTransferMapping.get().get(id).getTo())) {
-            findedMoneyTransferMapping.get().get(id).setActive(false);
-            this.transferMoneyMapping.put("", findedMoneyTransferMapping.get());
-            return;
-        }
-
-        throw new IllegalStateException("Вы не можете отменить чужой перевод!");
+        transfer.setActive(false);
+        transferMoneyMapping.put("_", transfers);
     }
 
     @Override
-    public void createUser(User user) {
-        Optional<User> newUser = this.userMapping.tryGet(user.getBlockchainAddress());
-        if (newUser.isPresent()) {
-            throw new IllegalStateException("Пользователь с таким адресом уже есть в системе!");
+    public void createUser(User request) {
+        String caller = contractCall.getCaller();
+        if (request == null || request.getName() == null || request.getName().isBlank()) {
+            throw new IllegalArgumentException("Укажите имя пользователя");
         }
-
-        this.userMapping.put(user.getBlockchainAddress(), user);
+        if (userMapping.tryGet(caller).isPresent()) {
+            throw new IllegalStateException("Пользователь уже зарегистрирован");
+        }
+        User user = new User();
+        user.setBlockchainAddress(caller);
+        user.setName(request.getName());
+        user.setHomeAddress(request.getHomeAddress());
+        user.setBalance(0);
+        user.setRole(Role.USER);
+        userMapping.put(caller, user);
     }
+
+    @Override
+    public void creditUser(String address, double amount) {
+        requireOwner();
+        requirePositiveAmount(amount);
+        User user = requireUser(address);
+        double newBalance = user.getBalance() + amount;
+        if (!Double.isFinite(newBalance)) {
+            throw new IllegalStateException("Переполнение баланса");
+        }
+        user.setBalance(newBalance);
+        userMapping.put(address, user);
+    }
+
+
+    private void requireOwner() {
+        String owner = ownerMapping.tryGet("OWNER")
+                .orElseThrow(() -> new IllegalStateException("Владелец контракта не задан"));
+        if (!owner.equals(contractCall.getCaller())) {
+            throw new SecurityException("Только администратор может выполнить операцию");
+        }
+    }
+
+    private User requireUser(String address) {
+        if (address == null || address.isBlank()) {
+            throw new IllegalArgumentException("Некорректный адрес пользователя");
+        }
+        return userMapping.tryGet(address)
+                .orElseThrow(() -> new IllegalStateException("Пользователь не найден"));
+    }
+
+    private List<MoneyTransfer> requireTransfers() {
+        return transferMoneyMapping.tryGet("_")
+                .orElseThrow(() -> new IllegalStateException("Переводы не инициализированы"));
+    }
+
+    private List<Parcel> requireParcels() {
+        return parcelMapping.tryGet("_")
+                .orElseThrow(() -> new IllegalStateException("Посылки не инициализированы"));
+    }
+
+    private HashMap<Integer, PostOffice> requireOffices() {
+        return postOfficeMapping.tryGet("_")
+                .orElseThrow(() -> new IllegalStateException("Отделения не инициализированы"));
+    }
+
+    private PostOffice requireOffice(int officeId) {
+        PostOffice office = requireOffices().get(officeId);
+        if (office == null) {
+            throw new IllegalArgumentException("Отделение не найдено: " + officeId);
+        }
+        return office;
+    }
+
+    private static void requirePositiveAmount(double amount) {
+        if (!Double.isFinite(amount) || amount <= 0) {
+            throw new IllegalArgumentException("Сумма должна быть положительной и конечной");
+        }
+    }
+
+    private static <T> T getByIndex(List<T> items, int index, String itemName) {
+        if (index < 0 || index >= items.size()) {
+            throw new IllegalArgumentException(itemName + " не найден(а): " + index);
+        }
+        return items.get(index);
+    }
+
 }

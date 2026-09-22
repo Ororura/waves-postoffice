@@ -8,6 +8,7 @@ plugins {
 }
 
 dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     implementation(kotlin("stdlib"))
     implementation("com.wavesenterprise:we-contract-sdk-grpc")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
@@ -21,3 +22,8 @@ tasks.withType<ShadowJar> {
 }
 
 project.setProperty("mainClassName", "com.ororura.Dispatcher")
+
+
+tasks.test {
+    useJUnitPlatform()
+}
