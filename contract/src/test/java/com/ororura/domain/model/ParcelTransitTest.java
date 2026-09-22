@@ -11,7 +11,7 @@ class ParcelTransitTest {
     parcel.setTrackNumber("RR-123");
     parcel.setStatus(ParcelStatus.ACCEPTED);
     parcel.setNextOffice(347901);
-    ParcelTransit transit = parcel.transferViaOffice(347901, 344000, "employee");
+    ParcelMovement transit = parcel.transferViaOffice(347901, 344000, "employee");
     assertEquals(1, transit.getSequence());
     assertEquals(344000, parcel.getNextOffice());
     assertEquals(ParcelStatus.IN_TRANSIT, parcel.getStatus());

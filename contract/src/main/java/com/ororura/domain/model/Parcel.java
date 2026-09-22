@@ -19,7 +19,7 @@ public class Parcel {
   private String addressFrom;
   private int nextOffice;
   private List<User> employeeCheckoutParcel;
-  private List<ParcelTransit> transitHistory = new ArrayList<>();
+  private List<ParcelMovement> transitHistory = new ArrayList<>();
   private ParcelStatus status;
 
   public Parcel(
@@ -51,15 +51,15 @@ public class Parcel {
 
   public Parcel() {}
 
-  public List<ParcelTransit> getTransitHistory() {
+  public List<ParcelMovement> getTransitHistory() {
     return Collections.unmodifiableList(transitHistory == null ? List.of() : transitHistory);
   }
 
-  public void setTransitHistory(List<ParcelTransit> history) {
+  public void setTransitHistory(List<ParcelMovement> history) {
     this.transitHistory = history == null ? new ArrayList<>() : new ArrayList<>(history);
   }
 
-  public ParcelTransit transferViaOffice(
+  public ParcelMovement transferViaOffice(
       int currentOfficeId, int nextOfficeId, String employeeAddress) {
     if (currentOfficeId != nextOffice || currentOfficeId == nextOfficeId) {
       throw new IllegalStateException("Неверное направление передачи посылки");
@@ -69,8 +69,8 @@ public class Parcel {
     }
     routeToOffice(nextOfficeId);
     if (transitHistory == null) transitHistory = new ArrayList<>();
-    ParcelTransit event =
-        new ParcelTransit(
+    ParcelMovement event =
+        new ParcelMovement(
             trackNumber,
             currentOfficeId,
             nextOfficeId,

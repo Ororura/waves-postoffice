@@ -9,7 +9,7 @@ public class PostOffice {
   private int postNumber;
   private String officeType;
   private Map<String, User> usersInOffice = new HashMap<>();
-  private List<ParcelTransit> transitHistory = new ArrayList<>();
+  private List<ParcelMovement> transitHistory = new ArrayList<>();
 
   public PostOffice() {}
 
@@ -42,11 +42,11 @@ public class PostOffice {
     usersInOffice = value == null ? new HashMap<>() : new HashMap<>(value);
   }
 
-  public List<ParcelTransit> getTransitHistory() {
+  public List<ParcelMovement> getTransitHistory() {
     return List.copyOf(transitHistory);
   }
 
-  public void setTransitHistory(List<ParcelTransit> value) {
+  public void setTransitHistory(List<ParcelMovement> value) {
     transitHistory = value == null ? new ArrayList<>() : new ArrayList<>(value);
   }
 
@@ -54,7 +54,7 @@ public class PostOffice {
     usersInOffice.put(user.getBlockchainAddress(), user);
   }
 
-  public void recordTransit(ParcelTransit event) {
+  public void recordTransit(ParcelMovement event) {
     if (event == null || event.getFromOfficeId() != postNumber) {
       throw new IllegalArgumentException("Запись относится к другому отделению");
     }

@@ -3,8 +3,8 @@ package com.ororura.application.service;
 import com.ororura.application.context.ContractContext;
 import com.ororura.application.security.AccessPolicy;
 import com.ororura.domain.model.Parcel;
+import com.ororura.domain.model.ParcelMovement;
 import com.ororura.domain.model.ParcelStatus;
-import com.ororura.domain.model.ParcelTransit;
 import com.ororura.domain.model.PostOffice;
 import com.ororura.domain.model.User;
 import com.ororura.domain.pricing.ShippingCostCalculator;
@@ -75,7 +75,8 @@ public final class ParcelService {
     if (parcel.getNextOffice() != currentOfficeId || currentOfficeId == nextOfficeId) {
       throw new IllegalStateException("Неверное направление передачи посылки");
     }
-    ParcelTransit event = parcel.transferViaOffice(currentOfficeId, nextOfficeId, context.caller());
+    ParcelMovement event =
+        parcel.transferViaOffice(currentOfficeId, nextOfficeId, context.caller());
     current.recordTransit(event);
     parcels.save(parcel);
     offices.saveAll(postOffices);
