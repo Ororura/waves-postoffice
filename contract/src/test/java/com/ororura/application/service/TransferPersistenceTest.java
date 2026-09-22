@@ -35,7 +35,7 @@ class TransferPersistenceTest {
     transfer.setTo(source.getTo());
     transfer.setAmount(source.getAmount());
     transfer.setLifeTime(source.getLifeTime());
-    transfer.setActive(source.isActive());
+    transfer.setStatus(source.getStatus());
     return transfer;
   }
 
@@ -109,7 +109,8 @@ class TransferPersistenceTest {
     service.acceptTransfer(0);
     assertEquals(80, storedUsers.get("alice").getBalance());
     assertEquals(25, storedUsers.get("bob").getBalance());
-    assertFalse(storedTransfers.get(0).isActive());
+    assertEquals(
+        com.ororura.domain.model.TransferStatus.ACCEPTED, storedTransfers.get(0).getStatus());
     assertThrows(IllegalStateException.class, () -> service.acceptTransfer(0));
   }
 }

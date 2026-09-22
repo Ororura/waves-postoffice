@@ -6,7 +6,7 @@ public class Parcel {
   private String trackNumber;
   private String from;
   private String to;
-  private String type;
+  private ParcelType type;
   private String shippingClass;
   private String deliveryTime;
   private long shippingCost;
@@ -17,12 +17,13 @@ public class Parcel {
   private String addressFrom;
   private int nextOffice;
   private List<User> employeeCheckoutParcel;
+  private ParcelStatus status;
 
   public Parcel(
       String trackNumber,
       String from,
       String to,
-      String type,
+      ParcelType type,
       String shippingClass,
       String deliveryTime,
       double weight,
@@ -46,6 +47,14 @@ public class Parcel {
   }
 
   public Parcel() {}
+
+  public ParcelStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(ParcelStatus status) {
+    this.status = status;
+  }
 
   public int getNextOffice() {
     return nextOffice;
@@ -87,11 +96,11 @@ public class Parcel {
     this.to = to;
   }
 
-  public String getType() {
+  public ParcelType getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType(ParcelType type) {
     this.type = type;
   }
 
@@ -175,6 +184,10 @@ public class Parcel {
     if (officeId <= 0) {
       throw new IllegalArgumentException("Некорректный идентификатор отделения");
     }
+    if (status != ParcelStatus.ACCEPTED && status != ParcelStatus.IN_TRANSIT) {
+      throw new IllegalStateException("Посылка не находится в процессе доставки");
+    }
     this.nextOffice = officeId;
+    this.status = ParcelStatus.IN_TRANSIT;
   }
 }

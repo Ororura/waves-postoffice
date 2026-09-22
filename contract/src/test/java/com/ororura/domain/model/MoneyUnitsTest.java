@@ -20,7 +20,7 @@ class MoneyUnitsTest {
   @Test
   void shippingIncludesInsuranceInMinorUnits() {
     Parcel parcel = new Parcel();
-    parcel.setType("PARCEL");
+    parcel.setType(com.ororura.domain.model.ParcelType.PARCEL);
     parcel.setWeight(2.5);
     parcel.setDeclaredValue(100);
     assertEquals(135, CalculateTotalCost.calculateTotalCost(parcel));

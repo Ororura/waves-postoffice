@@ -37,7 +37,7 @@ class TransferServiceTest {
     transfer.setFrom("alice");
     transfer.setTo("bob");
     transfer.setAmount(20);
-    transfer.setActive(true);
+    transfer.setStatus(com.ororura.domain.model.TransferStatus.PENDING);
     data.add(transfer);
     TransferRepository transfers =
         new TransferRepository() {
@@ -77,7 +77,7 @@ class TransferServiceTest {
     service.acceptTransfer(0);
     assertEquals(80, alice.getBalance());
     assertEquals(25, bob.getBalance());
-    assertFalse(data.get(0).isActive());
+    assertEquals(com.ororura.domain.model.TransferStatus.ACCEPTED, data.get(0).getStatus());
     assertThrows(IllegalStateException.class, () -> service.acceptTransfer(0));
     assertEquals(80, alice.getBalance());
     assertEquals(25, bob.getBalance());

@@ -11,7 +11,7 @@ class CalculateTotalCostTest {
   void shouldCalculateParcelCost() {
     Parcel parcel = new Parcel();
 
-    parcel.setType("PARCEL");
+    parcel.setType(com.ororura.domain.model.ParcelType.PARCEL);
     parcel.setWeight(2.5);
     parcel.setDeclaredValue(0);
 
@@ -24,7 +24,7 @@ class CalculateTotalCostTest {
   void shouldRejectNegativeWeight() {
     Parcel parcel = new Parcel();
 
-    parcel.setType("PARCEL");
+    parcel.setType(com.ororura.domain.model.ParcelType.PARCEL);
     parcel.setWeight(-10);
 
     assertThrows(
@@ -35,7 +35,7 @@ class CalculateTotalCostTest {
   void shouldRejectUnknownParcelType() {
     Parcel parcel = new Parcel();
 
-    parcel.setType("UNKNOWN");
+    parcel.setType(null);
     parcel.setWeight(5);
 
     assertThrows(

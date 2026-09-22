@@ -1,17 +1,15 @@
 package com.ororura.domain.model;
 
-import static com.ororura.domain.model.UserRole.USER;
-
 public class User {
   private String name;
   private String homeAddress;
   private String blockchainAddress;
   private long balance;
-  private String role = USER;
+  private UserRole role = UserRole.USER;
   private String postId;
 
   public User(
-      String name, String homeAddress, String blockchainAddress, long balance, String role) {
+      String name, String homeAddress, String blockchainAddress, long balance, UserRole role) {
     this.name = name;
     this.homeAddress = homeAddress;
     this.blockchainAddress = blockchainAddress;
@@ -64,11 +62,11 @@ public class User {
             : (postId.startsWith("RR") ? postId : "RR" + postId);
   }
 
-  public String getRole() {
+  public UserRole getRole() {
     return role;
   }
 
-  public void setRole(String role) {
+  public void setRole(UserRole role) {
     this.role = role;
   }
 

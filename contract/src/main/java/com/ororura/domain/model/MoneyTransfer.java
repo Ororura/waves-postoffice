@@ -5,7 +5,9 @@ public class MoneyTransfer {
   private String to;
   private long amount;
   private int lifeTime;
-  private boolean active = true;
+  private TransferStatus status = TransferStatus.PENDING;
+
+  public MoneyTransfer() {}
 
   public MoneyTransfer(String from, String to, long amount, int lifeTime) {
     this.from = from;
@@ -13,8 +15,6 @@ public class MoneyTransfer {
     this.amount = amount;
     this.lifeTime = lifeTime;
   }
-
-  public MoneyTransfer() {}
 
   public String getFrom() {
     return from;
@@ -48,12 +48,12 @@ public class MoneyTransfer {
     this.lifeTime = lifeTime;
   }
 
-  public boolean isActive() {
-    return active;
+  public TransferStatus getStatus() {
+    return status;
   }
 
-  public void setActive(boolean active) {
-    this.active = active;
+  public void setStatus(TransferStatus status) {
+    this.status = status;
   }
 
   public static MoneyTransfer create(String sender, String recipient, long amount, int lifeTime) {
@@ -61,38 +61,27 @@ public class MoneyTransfer {
         || sender.isBlank()
         || recipient == null
         || recipient.isBlank()
-        || sender.equals(recipient)) {
+        || sender.equals(recipient))
       throw new IllegalArgumentException("Некорректные участники перевода");
-    }
     User.requirePositive(amount);
-    MoneyTransfer transfer = new MoneyTransfer();
-    transfer.setFrom(sender);
-    transfer.setTo(recipient);
-    transfer.setAmount(amount);
-    transfer.setLifeTime(lifeTime);
-    transfer.setActive(true);
-    return transfer;
+    return new MoneyTransfer(sender, recipient, amount, lifeTime);
   }
 
   public void requireRecipient(String caller) {
-    if (!to.equals(caller)) {
-      throw new SecurityException("Нельзя обработать чужой перевод");
-    }
+    if (!to.equals(caller)) throw new SecurityException("Нельзя обработать чужой перевод");
   }
 
   public void requireActive() {
-    if (!active) {
-      throw new IllegalStateException("Перевод уже обработан");
-    }
+    if (status != TransferStatus.PENDING) throw new IllegalStateException("Перевод уже обработан");
   }
 
   public void accept() {
     requireActive();
-    active = false;
+    status = TransferStatus.ACCEPTED;
   }
 
   public void reject() {
     requireActive();
-    active = false;
+    status = TransferStatus.REJECTED;
   }
 }

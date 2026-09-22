@@ -52,6 +52,7 @@ public final class ParcelService {
     sender.debit(cost);
     parcel.assignSender(context.caller());
     parcel.assignShippingCost(cost);
+    parcel.setStatus(com.ororura.domain.model.ParcelStatus.ACCEPTED);
     all.add(parcel);
     users.save(sender);
     parcels.saveAll(all);
