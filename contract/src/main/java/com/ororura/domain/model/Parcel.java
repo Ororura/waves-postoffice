@@ -9,9 +9,9 @@ public class Parcel {
   private String type;
   private String shippingClass;
   private String deliveryTime;
-  private double shippingCost;
+  private long shippingCost;
   private double weight;
-  private double declaredValue = 0;
+  private long declaredValue = 0;
   private String totalValue;
   private String addressTo;
   private String addressFrom;
@@ -26,7 +26,7 @@ public class Parcel {
       String shippingClass,
       String deliveryTime,
       double weight,
-      double declaredValue,
+      long declaredValue,
       String totalValue,
       String addressTo,
       String addressFrom,
@@ -111,11 +111,11 @@ public class Parcel {
     this.deliveryTime = deliveryTime;
   }
 
-  public double getShippingCost() {
+  public long getShippingCost() {
     return shippingCost;
   }
 
-  public void setShippingCost(double shippingCost) {
+  public void setShippingCost(long shippingCost) {
     this.shippingCost = shippingCost;
   }
 
@@ -127,11 +127,11 @@ public class Parcel {
     this.weight = weight;
   }
 
-  public double getDeclaredValue() {
+  public long getDeclaredValue() {
     return declaredValue;
   }
 
-  public void setDeclaredValue(double declaredValue) {
+  public void setDeclaredValue(long declaredValue) {
     this.declaredValue = declaredValue;
   }
 
@@ -166,8 +166,8 @@ public class Parcel {
     this.from = sender;
   }
 
-  public void assignShippingCost(double amount) {
-    User.requirePositiveFinite(amount);
+  public void assignShippingCost(long amount) {
+    User.requirePositive(amount);
     this.shippingCost = amount;
   }
 

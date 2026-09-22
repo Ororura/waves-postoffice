@@ -45,7 +45,7 @@ public class PostContract implements IPostContract {
   }
 
   @Override
-  public void creditUser(String address, double amount) {
+  public void creditUser(String address, long amount) {
     users.creditUser(address, amount);
   }
 

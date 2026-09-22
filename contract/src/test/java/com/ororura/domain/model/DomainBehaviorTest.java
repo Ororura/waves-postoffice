@@ -8,12 +8,12 @@ class DomainBehaviorTest {
   @Test
   void userCannotDebitNegativeAmountOrGoIntoDebt() {
     User user = User.register("alice", "Alice", "Home");
-    user.credit(10.0);
-    assertThrows(IllegalArgumentException.class, () -> user.debit(-1.0));
-    assertThrows(IllegalStateException.class, () -> user.debit(11.0));
-    assertEquals(10.0, user.getBalance());
-    user.debit(4.0);
-    assertEquals(6.0, user.getBalance());
+    user.credit(10);
+    assertThrows(IllegalArgumentException.class, () -> user.debit(-1));
+    assertThrows(IllegalStateException.class, () -> user.debit(11));
+    assertEquals(10, user.getBalance());
+    user.debit(4);
+    assertEquals(6, user.getBalance());
   }
 
   @Test
@@ -31,7 +31,7 @@ class DomainBehaviorTest {
 
   @Test
   void transferCannotBeHandledTwice() {
-    MoneyTransfer transfer = MoneyTransfer.create("alice", "bob", 5.0, 1);
+    MoneyTransfer transfer = MoneyTransfer.create("alice", "bob", 5, 1);
     transfer.requireRecipient("bob");
     assertThrows(SecurityException.class, () -> transfer.requireRecipient("alice"));
     transfer.accept();
@@ -41,9 +41,8 @@ class DomainBehaviorTest {
 
   @Test
   void invalidAmountsAreRejected() {
-    assertThrows(IllegalArgumentException.class, () -> User.requirePositiveFinite(0));
-    assertThrows(IllegalArgumentException.class, () -> User.requirePositiveFinite(Double.NaN));
-    assertThrows(
-        IllegalArgumentException.class, () -> User.requirePositiveFinite(Double.POSITIVE_INFINITY));
+    assertThrows(IllegalArgumentException.class, () -> User.requirePositive(0));
+    assertThrows(IllegalArgumentException.class, () -> User.requirePositive(-1));
+    assertThrows(IllegalArgumentException.class, () -> User.requirePositive(Long.MIN_VALUE));
   }
 }

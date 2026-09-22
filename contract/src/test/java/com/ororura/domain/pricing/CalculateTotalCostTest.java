@@ -15,9 +15,9 @@ class CalculateTotalCostTest {
     parcel.setWeight(2.5);
     parcel.setDeclaredValue(0);
 
-    double cost = CalculateTotalCost.calculateTotalCost(parcel);
+    long cost = CalculateTotalCost.calculateTotalCost(parcel);
 
-    assertEquals(1.25, cost);
+    assertEquals(125, cost);
   }
 
   @Test

@@ -3,11 +3,11 @@ package com.ororura.domain.model;
 public class MoneyTransfer {
   private String from;
   private String to;
-  private double amount;
+  private long amount;
   private int lifeTime;
   private boolean active = true;
 
-  public MoneyTransfer(String from, String to, double amount, int lifeTime) {
+  public MoneyTransfer(String from, String to, long amount, int lifeTime) {
     this.from = from;
     this.to = to;
     this.amount = amount;
@@ -32,11 +32,11 @@ public class MoneyTransfer {
     this.to = to;
   }
 
-  public double getAmount() {
+  public long getAmount() {
     return amount;
   }
 
-  public void setAmount(double amount) {
+  public void setAmount(long amount) {
     this.amount = amount;
   }
 
@@ -56,7 +56,7 @@ public class MoneyTransfer {
     this.active = active;
   }
 
-  public static MoneyTransfer create(String sender, String recipient, double amount, int lifeTime) {
+  public static MoneyTransfer create(String sender, String recipient, long amount, int lifeTime) {
     if (sender == null
         || sender.isBlank()
         || recipient == null
@@ -64,7 +64,7 @@ public class MoneyTransfer {
         || sender.equals(recipient)) {
       throw new IllegalArgumentException("Некорректные участники перевода");
     }
-    User.requirePositiveFinite(amount);
+    User.requirePositive(amount);
     MoneyTransfer transfer = new MoneyTransfer();
     transfer.setFrom(sender);
     transfer.setTo(recipient);

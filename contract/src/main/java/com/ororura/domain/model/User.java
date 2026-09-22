@@ -6,11 +6,12 @@ public class User {
   private String name;
   private String homeAddress;
   private String blockchainAddress;
-  private double balance;
+  private long balance;
   private String role = USER;
   private String postId;
 
-  public User(String name, String homeAddress, String blockchainAddress, int balance, String role) {
+  public User(
+      String name, String homeAddress, String blockchainAddress, long balance, String role) {
     this.name = name;
     this.homeAddress = homeAddress;
     this.blockchainAddress = blockchainAddress;
@@ -44,11 +45,11 @@ public class User {
     this.homeAddress = homeAddress;
   }
 
-  public double getBalance() {
+  public long getBalance() {
     return balance;
   }
 
-  public void setBalance(double balance) {
+  public void setBalance(long balance) {
     this.balance = balance;
   }
 
@@ -92,27 +93,18 @@ public class User {
     this.homeAddress = homeAddress;
   }
 
-  public void debit(double amount) {
-    requirePositiveFinite(amount);
-    if (!Double.isFinite(balance) || balance < amount) {
+  public void debit(long amount) {
+    requirePositive(amount);
+    if (balance < amount) {
       throw new IllegalStateException("Недостаточно средств");
     }
-    double result = balance - amount;
-    if (!Double.isFinite(result)) {
-      throw new IllegalStateException("Некорректный баланс");
-    }
+    long result = Math.subtractExact(balance, amount);
     balance = result;
   }
 
-  public void credit(double amount) {
-    requirePositiveFinite(amount);
-    if (!Double.isFinite(balance)) {
-      throw new IllegalStateException("Некорректный баланс");
-    }
-    double result = balance + amount;
-    if (!Double.isFinite(result)) {
-      throw new IllegalStateException("Переполнение баланса");
-    }
+  public void credit(long amount) {
+    requirePositive(amount);
+    long result = Math.addExact(balance, amount);
     balance = result;
   }
 
@@ -129,9 +121,7 @@ public class User {
     setPostId(null);
   }
 
-  public static void requirePositiveFinite(double amount) {
-    if (!Double.isFinite(amount) || amount <= 0) {
-      throw new IllegalArgumentException("Сумма должна быть положительной и конечной");
-    }
+  public static void requirePositive(long amount) {
+    if (amount <= 0) throw new IllegalArgumentException("Сумма должна быть положительной");
   }
 }

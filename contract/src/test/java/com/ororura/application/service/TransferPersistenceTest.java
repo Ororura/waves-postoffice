@@ -44,8 +44,8 @@ class TransferPersistenceTest {
     Map<String, User> storedUsers = new HashMap<>();
     User alice = User.register("alice", "Alice", "Home");
     User bob = User.register("bob", "Bob", "Home");
-    alice.credit(100.0);
-    bob.credit(5.0);
+    alice.credit(100);
+    bob.credit(5);
     storedUsers.put("alice", copy(alice));
     storedUsers.put("bob", copy(bob));
 
@@ -63,7 +63,7 @@ class TransferPersistenceTest {
         };
 
     List<MoneyTransfer> storedTransfers = new ArrayList<>();
-    storedTransfers.add(MoneyTransfer.create("alice", "bob", 20.0, 1));
+    storedTransfers.add(MoneyTransfer.create("alice", "bob", 20, 1));
     TransferRepository transfers =
         new TransferRepository() {
           @Override
@@ -107,8 +107,8 @@ class TransferPersistenceTest {
     TransferService service = new TransferService(transfers, users, userService, () -> "bob");
 
     service.acceptTransfer(0);
-    assertEquals(80.0, storedUsers.get("alice").getBalance());
-    assertEquals(25.0, storedUsers.get("bob").getBalance());
+    assertEquals(80, storedUsers.get("alice").getBalance());
+    assertEquals(25, storedUsers.get("bob").getBalance());
     assertFalse(storedTransfers.get(0).isActive());
     assertThrows(IllegalStateException.class, () -> service.acceptTransfer(0));
   }

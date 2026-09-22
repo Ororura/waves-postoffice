@@ -43,7 +43,7 @@ public final class TransferService {
     userService.requireUser(request.getTo());
     MoneyTransfer transfer =
         MoneyTransfer.create(caller, request.getTo(), request.getAmount(), request.getLifeTime());
-    if (!Double.isFinite(sender.getBalance()) || sender.getBalance() < transfer.getAmount()) {
+    if (sender.getBalance() < transfer.getAmount()) {
       throw new IllegalStateException("Недостаточно средств");
     }
     List<MoneyTransfer> all = transfers.findAll();
@@ -56,15 +56,12 @@ public final class TransferService {
     MoneyTransfer transfer = requireTransferByIndex(all, id);
     transfer.requireRecipient(context.caller());
     transfer.requireActive();
-    User.requirePositiveFinite(transfer.getAmount());
+    User.requirePositive(transfer.getAmount());
 
     User sender = userService.requireUser(transfer.getFrom());
     User recipient = userService.requireUser(context.caller());
     // Validate both balances before changing either object.
-    double recipientBalance = recipient.getBalance() + transfer.getAmount();
-    if (!Double.isFinite(recipientBalance) || !Double.isFinite(recipient.getBalance())) {
-      throw new IllegalStateException("Переполнение баланса");
-    }
+    Math.addExact(recipient.getBalance(), transfer.getAmount());
     sender.debit(transfer.getAmount());
     recipient.credit(transfer.getAmount());
     transfer.accept();

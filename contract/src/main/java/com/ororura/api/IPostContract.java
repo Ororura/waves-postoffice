@@ -16,7 +16,7 @@ public interface IPostContract {
 
   @ContractAction
   void creditUser(
-      @InvokeParam(name = "user") String address, @InvokeParam(name = "amount") double amount);
+      @InvokeParam(name = "user") String address, @InvokeParam(name = "amount") long amount);
 
   @ContractAction
   void transferMoney(@InvokeParam(name = "money") MoneyTransfer moneyTransfer);

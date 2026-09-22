@@ -75,11 +75,11 @@ class TransferServiceTest {
             new AccessPolicy(metadata, () -> "bob"));
     TransferService service = new TransferService(transfers, users, userService, () -> "bob");
     service.acceptTransfer(0);
-    assertEquals(80.0, alice.getBalance());
-    assertEquals(25.0, bob.getBalance());
+    assertEquals(80, alice.getBalance());
+    assertEquals(25, bob.getBalance());
     assertFalse(data.get(0).isActive());
     assertThrows(IllegalStateException.class, () -> service.acceptTransfer(0));
-    assertEquals(80.0, alice.getBalance());
-    assertEquals(25.0, bob.getBalance());
+    assertEquals(80, alice.getBalance());
+    assertEquals(25, bob.getBalance());
   }
 }

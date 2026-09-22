@@ -45,8 +45,8 @@ public final class ParcelService {
     if (parcels.existsByTrackingNumber(parcel.getTrackNumber())) {
       throw new IllegalStateException("Трек-номер уже существует");
     }
-    double cost = CalculateTotalCost.calculateTotalCost(parcel);
-    if (!Double.isFinite(cost) || cost <= 0) {
+    long cost = CalculateTotalCost.calculateTotalCost(parcel);
+    if (cost <= 0) {
       throw new IllegalArgumentException("Некорректная стоимость доставки");
     }
     sender.debit(cost);

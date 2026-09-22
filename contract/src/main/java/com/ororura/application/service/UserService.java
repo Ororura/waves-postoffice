@@ -63,7 +63,7 @@ public final class UserService {
     users.save(user);
   }
 
-  public void creditUser(String address, double amount) {
+  public void creditUser(String address, long amount) {
     access.requireOwner();
     User user = requireUser(address);
     user.credit(amount);
