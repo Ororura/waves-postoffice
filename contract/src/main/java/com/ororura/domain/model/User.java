@@ -1,6 +1,6 @@
 package com.ororura.domain.model;
 
-import static com.ororura.api.IPostContract.Role.USER;
+import static com.ororura.domain.model.UserRole.USER;
 
 public class User {
     private String name;
