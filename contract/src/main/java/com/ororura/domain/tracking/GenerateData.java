@@ -1,6 +1,6 @@
-package com.ororura.utils;
+package com.ororura.domain.tracking;
 
-import com.ororura.model.Parcel;
+import com.ororura.domain.model.Parcel;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -1,8 +1,8 @@
 package com.ororura.api;
 
-import com.ororura.model.MoneyTransfer;
-import com.ororura.model.Parcel;
-import com.ororura.model.User;
+import com.ororura.domain.model.MoneyTransfer;
+import com.ororura.domain.model.Parcel;
+import com.ororura.domain.model.User;
 import com.wavesenterprise.sdk.contract.api.annotation.ContractAction;
 import com.wavesenterprise.sdk.contract.api.annotation.ContractInit;
 import com.wavesenterprise.sdk.contract.api.annotation.InvokeParam;

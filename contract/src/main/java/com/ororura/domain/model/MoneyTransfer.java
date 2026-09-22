@@ -1,4 +1,4 @@
-package com.ororura.model;
+package com.ororura.domain.model;
 
 public class MoneyTransfer {
     private String from;
