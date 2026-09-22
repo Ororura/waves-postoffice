@@ -19,8 +19,6 @@ public final class ContractInitializationService {
   }
 
   public void init() {
-    if (metadata.findOwner().isPresent())
-      throw new IllegalStateException("Контракт уже инициализирован");
     HashMap<Integer, PostOffice> all = new HashMap<>();
     all.put(344000, new PostOffice(344000, "SORTING_CENTER"));
     all.put(347900, new PostOffice(347900, "MAIN_POST_OFFICE"));
