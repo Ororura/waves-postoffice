@@ -158,4 +158,23 @@ public class Parcel {
   public void setAddressFrom(String addressFrom) {
     this.addressFrom = addressFrom;
   }
+
+  public void assignSender(String sender) {
+    if (sender == null || sender.isBlank()) {
+      throw new IllegalArgumentException("Не указан отправитель");
+    }
+    this.from = sender;
+  }
+
+  public void assignShippingCost(double amount) {
+    User.requirePositiveFinite(amount);
+    this.shippingCost = amount;
+  }
+
+  public void routeToOffice(int officeId) {
+    if (officeId <= 0) {
+      throw new IllegalArgumentException("Некорректный идентификатор отделения");
+    }
+    this.nextOffice = officeId;
+  }
 }

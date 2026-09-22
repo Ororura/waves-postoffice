@@ -44,4 +44,11 @@ public class PostOffice {
   public void addUser(User user) {
     this.usersInOffice.put(user.getBlockchainAddress(), user);
   }
+
+  public void acceptParcel(AcceptedParcel parcel) {
+    if (parcel == null || parcel.getParcel() == null || parcel.getUser() == null) {
+      throw new IllegalArgumentException("Некорректное почтовое отправление");
+    }
+    acceptedParcel.add(parcel);
+  }
 }

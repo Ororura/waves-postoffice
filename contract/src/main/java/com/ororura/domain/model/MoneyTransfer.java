@@ -55,4 +55,44 @@ public class MoneyTransfer {
   public void setActive(boolean active) {
     this.active = active;
   }
+
+  public static MoneyTransfer create(String sender, String recipient, double amount, int lifeTime) {
+    if (sender == null
+        || sender.isBlank()
+        || recipient == null
+        || recipient.isBlank()
+        || sender.equals(recipient)) {
+      throw new IllegalArgumentException("Некорректные участники перевода");
+    }
+    User.requirePositiveFinite(amount);
+    MoneyTransfer transfer = new MoneyTransfer();
+    transfer.setFrom(sender);
+    transfer.setTo(recipient);
+    transfer.setAmount(amount);
+    transfer.setLifeTime(lifeTime);
+    transfer.setActive(true);
+    return transfer;
+  }
+
+  public void requireRecipient(String caller) {
+    if (!to.equals(caller)) {
+      throw new SecurityException("Нельзя обработать чужой перевод");
+    }
+  }
+
+  public void requireActive() {
+    if (!active) {
+      throw new IllegalStateException("Перевод уже обработан");
+    }
+  }
+
+  public void accept() {
+    requireActive();
+    active = false;
+  }
+
+  public void reject() {
+    requireActive();
+    active = false;
+  }
 }
