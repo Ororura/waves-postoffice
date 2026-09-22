@@ -6,7 +6,7 @@ import com.wavesenterprise.sdk.contract.api.annotation.ContractInit;
 import com.wavesenterprise.sdk.contract.api.annotation.InvokeParam;
 
 /** V2: not compatible with V1 call payloads or previously persisted state. */
-public interface IPostContract {
+public interface PostOfficeContract {
   @ContractInit
   void init();
 

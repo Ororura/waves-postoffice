@@ -67,7 +67,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.ororura.bootstrap.Dispatcher")
+    mainClass.set("com.ororura.bootstrap.PostOfficeContractDispatcher")
 }
 
 tasks.withType<ShadowJar>().configureEach {
