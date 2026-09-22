@@ -1,5 +1,7 @@
 package com.ororura.domain.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Parcel {
@@ -17,6 +19,7 @@ public class Parcel {
   private String addressFrom;
   private int nextOffice;
   private List<User> employeeCheckoutParcel;
+  private List<ParcelTransit> transitHistory = new ArrayList<>();
   private ParcelStatus status;
 
   public Parcel(
@@ -47,6 +50,35 @@ public class Parcel {
   }
 
   public Parcel() {}
+
+  public List<ParcelTransit> getTransitHistory() {
+    return Collections.unmodifiableList(transitHistory == null ? List.of() : transitHistory);
+  }
+
+  public void setTransitHistory(List<ParcelTransit> history) {
+    this.transitHistory = history == null ? new ArrayList<>() : new ArrayList<>(history);
+  }
+
+  public ParcelTransit transferViaOffice(
+      int currentOfficeId, int nextOfficeId, String employeeAddress) {
+    if (currentOfficeId != nextOffice || currentOfficeId == nextOfficeId) {
+      throw new IllegalStateException("Неверное направление передачи посылки");
+    }
+    if (employeeAddress == null || employeeAddress.isBlank()) {
+      throw new IllegalArgumentException("Не указан сотрудник");
+    }
+    routeToOffice(nextOfficeId);
+    if (transitHistory == null) transitHistory = new ArrayList<>();
+    ParcelTransit event =
+        new ParcelTransit(
+            trackNumber,
+            currentOfficeId,
+            nextOfficeId,
+            employeeAddress,
+            Math.addExact(transitHistory.size(), 1));
+    transitHistory.add(event);
+    return event;
+  }
 
   public ParcelStatus getStatus() {
     return status;
