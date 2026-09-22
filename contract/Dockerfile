@@ -1,12 +1,14 @@
 FROM eclipse-temurin:17-jre-alpine
-MAINTAINER Waves Enterprise <>
 
-ENV JAVA_MEM="-Xmx256M"
-ENV JAVA_OPTS=""
+LABEL org.opencontainers.image.title="waves-postoffice-contract"
 
-ADD build/libs/*-all.jar app.jar
+WORKDIR /app
+
+ENV JAVA_MEM="-Xmx256M" \
+    JAVA_OPTS=""
+
 RUN apk --no-cache add curl
 
-RUN chmod +x app.jar
-RUN eval $SET_ENV_CMD
-CMD ["/bin/sh", "-c", "eval ${SET_ENV_CMD} ; java $JAVA_MEM $JAVA_OPTS -jar app.jar"]
+COPY build/libs/*-all.jar /app/app.jar
+
+CMD ["/bin/sh", "-c", "exec java $JAVA_MEM $JAVA_OPTS -jar /app/app.jar"]
