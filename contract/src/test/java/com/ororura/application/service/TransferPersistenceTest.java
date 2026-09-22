@@ -3,113 +3,97 @@ package com.ororura.application.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.ororura.application.security.AccessPolicy;
-import com.ororura.domain.model.MoneyTransfer;
-import com.ororura.domain.model.PostOffice;
-import com.ororura.domain.model.User;
-import com.ororura.domain.repository.ContractMetadataRepository;
-import com.ororura.domain.repository.PostOfficeRepository;
-import com.ororura.domain.repository.TransferRepository;
-import com.ororura.domain.repository.UserRepository;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.ororura.domain.model.*;
+import com.ororura.domain.repository.*;
+import java.util.*;
 import org.junit.jupiter.api.Test;
 
 class TransferPersistenceTest {
-  private static User copy(User source) {
-    User user = new User();
-    user.setBlockchainAddress(source.getBlockchainAddress());
-    user.setName(source.getName());
-    user.setHomeAddress(source.getHomeAddress());
-    user.setBalance(source.getBalance());
-    user.setRole(source.getRole());
-    user.setPostId(source.getPostId());
+  private static User copy(User value) {
+    User user =
+        User.register(value.getBlockchainAddress(), value.getName(), value.getHomeAddress());
+    user.setBalance(value.getBalance());
+    user.setRole(value.getRole());
+    user.setPostId(value.getPostId());
     return user;
   }
 
-  private static MoneyTransfer copy(MoneyTransfer source) {
-    MoneyTransfer transfer = new MoneyTransfer();
-    transfer.setFrom(source.getFrom());
-    transfer.setTo(source.getTo());
-    transfer.setAmount(source.getAmount());
-    transfer.setLifeTime(source.getLifeTime());
-    transfer.setActive(source.isActive());
-    return transfer;
+  private static MoneyTransfer copy(MoneyTransfer value) {
+    MoneyTransfer t = new MoneyTransfer();
+    t.setFrom(value.getFrom());
+    t.setTo(value.getTo());
+    t.setAmount(value.getAmount());
+    t.setLifeTime(value.getLifeTime());
+    t.setStatus(value.getStatus());
+    return t;
   }
 
   @Test
-  void acceptingTransferExplicitlyPersistsBothBalancesAndTransferState() {
-    Map<String, User> storedUsers = new HashMap<>();
-    User alice = User.register("alice", "Alice", "Home");
-    User bob = User.register("bob", "Bob", "Home");
-    alice.credit(100.0);
-    bob.credit(5.0);
-    storedUsers.put("alice", copy(alice));
-    storedUsers.put("bob", copy(bob));
-
+  void transferRequiresExplicitSaves() {
+    Map<String, User> store = new HashMap<>();
+    User alice = User.register("alice", "Alice", "home");
+    alice.credit(100);
+    User bob = User.register("bob", "Bob", "home");
+    bob.credit(5);
+    store.put("alice", copy(alice));
+    store.put("bob", copy(bob));
     UserRepository users =
         new UserRepository() {
-          @Override
-          public Optional<User> findByAddress(String address) {
-            return Optional.ofNullable(storedUsers.get(address)).map(TransferPersistenceTest::copy);
+          public Optional<User> findByAddress(String id) {
+            return Optional.ofNullable(store.get(id)).map(TransferPersistenceTest::copy);
           }
 
-          @Override
-          public void save(User user) {
-            storedUsers.put(user.getBlockchainAddress(), copy(user));
+          public void save(User value) {
+            store.put(value.getBlockchainAddress(), copy(value));
           }
         };
-
-    List<MoneyTransfer> storedTransfers = new ArrayList<>();
-    storedTransfers.add(MoneyTransfer.create("alice", "bob", 20.0, 1));
+    Map<Integer, MoneyTransfer> transferStore = new HashMap<>();
+    transferStore.put(0, MoneyTransfer.create("alice", "bob", 20, 1));
     TransferRepository transfers =
         new TransferRepository() {
-          @Override
-          public List<MoneyTransfer> findAll() {
-            return storedTransfers.stream().map(TransferPersistenceTest::copy).toList();
+          public int create(MoneyTransfer value) {
+            int id = transferStore.size();
+            transferStore.put(id, copy(value));
+            return id;
           }
 
-          @Override
-          public void saveAll(List<MoneyTransfer> values) {
-            storedTransfers.clear();
-            values.stream().map(TransferPersistenceTest::copy).forEach(storedTransfers::add);
+          public MoneyTransfer requireById(int id) {
+            return Optional.ofNullable(transferStore.get(id))
+                .map(TransferPersistenceTest::copy)
+                .orElseThrow();
+          }
+
+          public void save(int id, MoneyTransfer value) {
+            transferStore.put(id, copy(value));
           }
         };
-
     ContractMetadataRepository metadata =
         new ContractMetadataRepository() {
-          @Override
           public Optional<String> findOwner() {
             return Optional.of("admin");
           }
 
-          @Override
           public void saveOwner(String address) {}
         };
-    PostOfficeRepository officeRepo =
+    PostOfficeRepository offices =
         new PostOfficeRepository() {
-          @Override
           public HashMap<Integer, PostOffice> findAll() {
             return new HashMap<>();
           }
 
-          @Override
-          public void saveAll(HashMap<Integer, PostOffice> offices) {}
+          public void saveAll(HashMap<Integer, PostOffice> value) {}
         };
     UserService userService =
         new UserService(
             users,
-            new PostOfficeService(officeRepo),
+            new PostOfficeService(offices),
             () -> "bob",
             new AccessPolicy(metadata, () -> "bob"));
     TransferService service = new TransferService(transfers, users, userService, () -> "bob");
-
     service.acceptTransfer(0);
-    assertEquals(80.0, storedUsers.get("alice").getBalance());
-    assertEquals(25.0, storedUsers.get("bob").getBalance());
-    assertFalse(storedTransfers.get(0).isActive());
+    assertEquals(80, store.get("alice").getBalance());
+    assertEquals(25, store.get("bob").getBalance());
+    assertEquals(TransferStatus.ACCEPTED, transferStore.get(0).getStatus());
     assertThrows(IllegalStateException.class, () -> service.acceptTransfer(0));
   }
 }

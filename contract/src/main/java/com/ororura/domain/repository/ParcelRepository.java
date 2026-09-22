@@ -1,12 +1,14 @@
 package com.ororura.domain.repository;
 
 import com.ororura.domain.model.Parcel;
-import java.util.List;
+import java.util.Optional;
 
 public interface ParcelRepository {
-  List<Parcel> findAll();
+  Optional<Parcel> findByTrackingNumber(String trackingNumber);
 
-  boolean existsByTrackingNumber(String trackingNumber);
+  default boolean existsByTrackingNumber(String trackingNumber) {
+    return findByTrackingNumber(trackingNumber).isPresent();
+  }
 
-  void saveAll(List<Parcel> parcels);
+  void save(Parcel parcel);
 }

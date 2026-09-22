@@ -3,52 +3,61 @@ package com.ororura.domain.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PostOffice {
   private int postNumber;
   private String officeType;
-  private final HashMap<String, User> usersInOffice = new HashMap<>();
-  private final List<AcceptedParcel> acceptedParcel = new ArrayList<>();
+  private Map<String, User> usersInOffice = new HashMap<>();
+  private List<ParcelTransit> transitHistory = new ArrayList<>();
+
+  public PostOffice() {}
 
   public PostOffice(int postNumber, String officeType) {
     this.postNumber = postNumber;
     this.officeType = officeType;
   }
 
-  public PostOffice() {}
-
   public int getPostNumber() {
     return postNumber;
   }
 
-  public void setPostNumber(int postNumber) {
-    this.postNumber = postNumber;
+  public void setPostNumber(int value) {
+    postNumber = value;
   }
 
   public String getOfficeType() {
     return officeType;
   }
 
-  public void setOfficeType(String officeType) {
-    this.officeType = officeType;
+  public void setOfficeType(String value) {
+    officeType = value;
   }
 
-  public List<AcceptedParcel> getAcceptedParcel() {
-    return acceptedParcel;
-  }
-
-  public HashMap<String, User> getUsersInOffice() {
+  public Map<String, User> getUsersInOffice() {
     return usersInOffice;
   }
 
-  public void addUser(User user) {
-    this.usersInOffice.put(user.getBlockchainAddress(), user);
+  public void setUsersInOffice(Map<String, User> value) {
+    usersInOffice = value == null ? new HashMap<>() : new HashMap<>(value);
   }
 
-  public void acceptParcel(AcceptedParcel parcel) {
-    if (parcel == null || parcel.getParcel() == null || parcel.getUser() == null) {
-      throw new IllegalArgumentException("Некорректное почтовое отправление");
+  public List<ParcelTransit> getTransitHistory() {
+    return List.copyOf(transitHistory);
+  }
+
+  public void setTransitHistory(List<ParcelTransit> value) {
+    transitHistory = value == null ? new ArrayList<>() : new ArrayList<>(value);
+  }
+
+  public void addUser(User user) {
+    usersInOffice.put(user.getBlockchainAddress(), user);
+  }
+
+  public void recordTransit(ParcelTransit event) {
+    if (event == null || event.getFromOfficeId() != postNumber) {
+      throw new IllegalArgumentException("Запись относится к другому отделению");
     }
-    acceptedParcel.add(parcel);
+    transitHistory.add(event);
   }
 }

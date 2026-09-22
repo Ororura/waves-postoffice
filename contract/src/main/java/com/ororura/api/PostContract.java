@@ -1,5 +1,6 @@
 package com.ororura.api;
 
+import com.ororura.api.dto.*;
 import com.ororura.application.service.*;
 import com.ororura.bootstrap.ContractFactory;
 import com.ororura.domain.model.MoneyTransfer;
@@ -18,10 +19,10 @@ public class PostContract implements IPostContract {
 
   public PostContract(ContractState state, ContractCall call) {
     ContractFactory factory = new ContractFactory(state, call);
-    this.initialization = factory.initialization();
-    this.users = factory.users();
-    this.transfers = factory.transfers();
-    this.parcels = factory.parcels();
+    initialization = factory.initialization();
+    users = factory.users();
+    transfers = factory.transfers();
+    parcels = factory.parcels();
   }
 
   @Override
@@ -30,13 +31,26 @@ public class PostContract implements IPostContract {
   }
 
   @Override
-  public void createUser(User user) {
+  public void createUser(RegisterUserRequest request) {
+    if (request == null) throw new IllegalArgumentException("Не указан пользователь");
+    User user = new User();
+    user.setName(request.getName());
+    user.setHomeAddress(request.getHomeAddress());
     users.createUser(user);
   }
 
   @Override
-  public void changePersonalData(User user) {
+  public void changePersonalData(UpdateUserRequest request) {
+    if (request == null) throw new IllegalArgumentException("Не указан пользователь");
+    User user = new User();
+    user.setName(request.getName());
+    user.setHomeAddress(request.getHomeAddress());
     users.changePersonalData(user);
+  }
+
+  @Override
+  public void creditUser(String address, long amount) {
+    users.creditUser(address, amount);
   }
 
   @Override
@@ -45,12 +59,12 @@ public class PostContract implements IPostContract {
   }
 
   @Override
-  public void creditUser(String address, double amount) {
-    users.creditUser(address, amount);
-  }
-
-  @Override
-  public void transferMoney(MoneyTransfer transfer) {
+  public void transferMoney(CreateTransferRequest request) {
+    if (request == null) throw new IllegalArgumentException("Не указан перевод");
+    MoneyTransfer transfer = new MoneyTransfer();
+    transfer.setTo(request.getTo());
+    transfer.setAmount(request.getAmount());
+    // No chain-time source in ContractContext; expiry is deliberately not exposed in V2 API.
     transfers.transferMoney(transfer);
   }
 
@@ -65,12 +79,25 @@ public class PostContract implements IPostContract {
   }
 
   @Override
-  public void sendPackage(Parcel parcel) {
+  public void sendPackage(CreateParcelRequest request) {
+    if (request == null) throw new IllegalArgumentException("Не указана посылка");
+    Parcel parcel = new Parcel();
+    parcel.setTrackNumber(request.getTrackNumber());
+    parcel.setTo(request.getTo());
+    parcel.setType(request.getType());
+    parcel.setShippingClass(request.getShippingClass());
+    parcel.setDeliveryTime(request.getDeliveryTime());
+    parcel.setWeight(request.getWeight());
+    parcel.setDeclaredValue(request.getDeclaredValue());
+    parcel.setTotalValue(request.getTotalValue());
+    parcel.setAddressTo(request.getAddressTo());
+    parcel.setAddressFrom(request.getAddressFrom());
+    parcel.setNextOffice(request.getNextOffice());
     parcels.sendPackage(parcel);
   }
 
   @Override
-  public void checkoutParcel(int parcelId, int nextPostId) {
-    parcels.checkoutParcel(parcelId, nextPostId);
+  public void checkoutParcel(String trackingNumber, int nextPostId) {
+    parcels.checkoutParcel(trackingNumber, nextPostId);
   }
 }

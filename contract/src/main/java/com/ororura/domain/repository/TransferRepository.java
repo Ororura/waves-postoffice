@@ -1,10 +1,11 @@
 package com.ororura.domain.repository;
 
 import com.ororura.domain.model.MoneyTransfer;
-import java.util.List;
 
 public interface TransferRepository {
-  List<MoneyTransfer> findAll();
+  int create(MoneyTransfer transfer);
 
-  void saveAll(List<MoneyTransfer> transfers);
+  MoneyTransfer requireById(int id);
+
+  void save(int id, MoneyTransfer transfer);
 }

@@ -1,32 +1,36 @@
 package com.ororura.domain.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Parcel {
   private String trackNumber;
   private String from;
   private String to;
-  private String type;
+  private ParcelType type;
   private String shippingClass;
   private String deliveryTime;
-  private double shippingCost;
+  private long shippingCost;
   private double weight;
-  private double declaredValue = 0;
+  private long declaredValue = 0;
   private String totalValue;
   private String addressTo;
   private String addressFrom;
   private int nextOffice;
   private List<User> employeeCheckoutParcel;
+  private List<ParcelTransit> transitHistory = new ArrayList<>();
+  private ParcelStatus status;
 
   public Parcel(
       String trackNumber,
       String from,
       String to,
-      String type,
+      ParcelType type,
       String shippingClass,
       String deliveryTime,
       double weight,
-      double declaredValue,
+      long declaredValue,
       String totalValue,
       String addressTo,
       String addressFrom,
@@ -46,6 +50,43 @@ public class Parcel {
   }
 
   public Parcel() {}
+
+  public List<ParcelTransit> getTransitHistory() {
+    return Collections.unmodifiableList(transitHistory == null ? List.of() : transitHistory);
+  }
+
+  public void setTransitHistory(List<ParcelTransit> history) {
+    this.transitHistory = history == null ? new ArrayList<>() : new ArrayList<>(history);
+  }
+
+  public ParcelTransit transferViaOffice(
+      int currentOfficeId, int nextOfficeId, String employeeAddress) {
+    if (currentOfficeId != nextOffice || currentOfficeId == nextOfficeId) {
+      throw new IllegalStateException("Неверное направление передачи посылки");
+    }
+    if (employeeAddress == null || employeeAddress.isBlank()) {
+      throw new IllegalArgumentException("Не указан сотрудник");
+    }
+    routeToOffice(nextOfficeId);
+    if (transitHistory == null) transitHistory = new ArrayList<>();
+    ParcelTransit event =
+        new ParcelTransit(
+            trackNumber,
+            currentOfficeId,
+            nextOfficeId,
+            employeeAddress,
+            Math.addExact(transitHistory.size(), 1));
+    transitHistory.add(event);
+    return event;
+  }
+
+  public ParcelStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(ParcelStatus status) {
+    this.status = status;
+  }
 
   public int getNextOffice() {
     return nextOffice;
@@ -87,11 +128,11 @@ public class Parcel {
     this.to = to;
   }
 
-  public String getType() {
+  public ParcelType getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType(ParcelType type) {
     this.type = type;
   }
 
@@ -111,11 +152,11 @@ public class Parcel {
     this.deliveryTime = deliveryTime;
   }
 
-  public double getShippingCost() {
+  public long getShippingCost() {
     return shippingCost;
   }
 
-  public void setShippingCost(double shippingCost) {
+  public void setShippingCost(long shippingCost) {
     this.shippingCost = shippingCost;
   }
 
@@ -127,11 +168,11 @@ public class Parcel {
     this.weight = weight;
   }
 
-  public double getDeclaredValue() {
+  public long getDeclaredValue() {
     return declaredValue;
   }
 
-  public void setDeclaredValue(double declaredValue) {
+  public void setDeclaredValue(long declaredValue) {
     this.declaredValue = declaredValue;
   }
 
@@ -166,8 +207,8 @@ public class Parcel {
     this.from = sender;
   }
 
-  public void assignShippingCost(double amount) {
-    User.requirePositiveFinite(amount);
+  public void assignShippingCost(long amount) {
+    User.requirePositive(amount);
     this.shippingCost = amount;
   }
 
@@ -175,6 +216,10 @@ public class Parcel {
     if (officeId <= 0) {
       throw new IllegalArgumentException("Некорректный идентификатор отделения");
     }
+    if (status != ParcelStatus.ACCEPTED && status != ParcelStatus.IN_TRANSIT) {
+      throw new IllegalStateException("Посылка не находится в процессе доставки");
+    }
     this.nextOffice = officeId;
+    this.status = ParcelStatus.IN_TRANSIT;
   }
 }

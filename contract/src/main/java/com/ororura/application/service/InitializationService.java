@@ -3,28 +3,17 @@ package com.ororura.application.service;
 import com.ororura.application.context.ContractContext;
 import com.ororura.domain.model.PostOffice;
 import com.ororura.domain.repository.ContractMetadataRepository;
-import com.ororura.domain.repository.ParcelRepository;
 import com.ororura.domain.repository.PostOfficeRepository;
-import com.ororura.domain.repository.TransferRepository;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public final class InitializationService {
   private final ContractMetadataRepository metadata;
-  private final ParcelRepository parcels;
-  private final TransferRepository transfers;
   private final PostOfficeRepository offices;
   private final ContractContext context;
 
   public InitializationService(
-      ContractMetadataRepository metadata,
-      ParcelRepository parcels,
-      TransferRepository transfers,
-      PostOfficeRepository offices,
-      ContractContext context) {
+      ContractMetadataRepository metadata, PostOfficeRepository offices, ContractContext context) {
     this.metadata = metadata;
-    this.parcels = parcels;
-    this.transfers = transfers;
     this.offices = offices;
     this.context = context;
   }
@@ -40,9 +29,7 @@ public final class InitializationService {
     all.put(347903, new PostOffice(347903, "POST_OFFICE"));
     all.put(346770, new PostOffice(346770, "MAIN_POST_OFFICE"));
     all.put(346771, new PostOffice(346771, "POST_OFFICE"));
-    metadata.saveOwner(context.caller());
-    transfers.saveAll(new ArrayList<>());
-    parcels.saveAll(new ArrayList<>());
     offices.saveAll(all);
+    metadata.saveOwner(context.caller());
   }
 }

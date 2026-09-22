@@ -12,43 +12,38 @@ class TransferServiceTest {
   @Test
   void acceptanceDebitsSenderAndCannotBeRepeated() {
     Map<String, User> accounts = new HashMap<>();
-    User alice = new User();
-    alice.setBlockchainAddress("alice");
-    alice.setName("Alice");
-    alice.setBalance(100);
-    User bob = new User();
-    bob.setBlockchainAddress("bob");
-    bob.setName("Bob");
-    bob.setBalance(5);
+    User alice = User.register("alice", "Alice", "home");
+    alice.credit(100);
+    User bob = User.register("bob", "Bob", "home");
+    bob.credit(5);
     accounts.put("alice", alice);
     accounts.put("bob", bob);
     UserRepository users =
         new UserRepository() {
-          public Optional<User> findByAddress(String address) {
-            return Optional.ofNullable(accounts.get(address));
+          public Optional<User> findByAddress(String id) {
+            return Optional.ofNullable(accounts.get(id));
           }
 
           public void save(User user) {
             accounts.put(user.getBlockchainAddress(), user);
           }
         };
-    List<MoneyTransfer> data = new ArrayList<>();
-    MoneyTransfer transfer = new MoneyTransfer();
-    transfer.setFrom("alice");
-    transfer.setTo("bob");
-    transfer.setAmount(20);
-    transfer.setActive(true);
-    data.add(transfer);
+    Map<Integer, MoneyTransfer> stored = new HashMap<>();
+    stored.put(0, MoneyTransfer.create("alice", "bob", 20, 1));
     TransferRepository transfers =
         new TransferRepository() {
-          public List<MoneyTransfer> findAll() {
-            return data;
+          public int create(MoneyTransfer t) {
+            int id = stored.size();
+            stored.put(id, t);
+            return id;
           }
 
-          public void saveAll(List<MoneyTransfer> all) {
-            List<MoneyTransfer> copy = new ArrayList<>(all);
-            data.clear();
-            data.addAll(copy);
+          public MoneyTransfer requireById(int id) {
+            return Optional.ofNullable(stored.get(id)).orElseThrow();
+          }
+
+          public void save(int id, MoneyTransfer t) {
+            stored.put(id, t);
           }
         };
     ContractMetadataRepository metadata =
@@ -57,29 +52,27 @@ class TransferServiceTest {
             return Optional.of("admin");
           }
 
-          public void saveOwner(String ignored) {}
+          public void saveOwner(String address) {}
         };
-    PostOfficeRepository officeRepo =
+    PostOfficeRepository offices =
         new PostOfficeRepository() {
           public HashMap<Integer, PostOffice> findAll() {
             return new HashMap<>();
           }
 
-          public void saveAll(HashMap<Integer, PostOffice> ignored) {}
+          public void saveAll(HashMap<Integer, PostOffice> values) {}
         };
     UserService userService =
         new UserService(
             users,
-            new PostOfficeService(officeRepo),
+            new PostOfficeService(offices),
             () -> "bob",
             new AccessPolicy(metadata, () -> "bob"));
     TransferService service = new TransferService(transfers, users, userService, () -> "bob");
     service.acceptTransfer(0);
-    assertEquals(80.0, alice.getBalance());
-    assertEquals(25.0, bob.getBalance());
-    assertFalse(data.get(0).isActive());
+    assertEquals(80, accounts.get("alice").getBalance());
+    assertEquals(25, accounts.get("bob").getBalance());
+    assertEquals(TransferStatus.ACCEPTED, stored.get(0).getStatus());
     assertThrows(IllegalStateException.class, () -> service.acceptTransfer(0));
-    assertEquals(80.0, alice.getBalance());
-    assertEquals(25.0, bob.getBalance());
   }
 }

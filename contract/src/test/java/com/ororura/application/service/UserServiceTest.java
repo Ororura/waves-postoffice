@@ -56,7 +56,7 @@ class UserServiceTest {
     User stored = store.get("alice");
     assertNotNull(stored);
     assertEquals("alice", stored.getBlockchainAddress());
-    assertEquals(0.0, stored.getBalance());
+    assertEquals(0, stored.getBalance());
     assertEquals(UserRole.USER, stored.getRole());
     assertNull(store.get("someone-else"));
   }
@@ -77,7 +77,7 @@ class UserServiceTest {
     service.changePersonalData(update);
     assertEquals("New name", stored.getName());
     assertEquals("alice", stored.getBlockchainAddress());
-    assertEquals(150.0, stored.getBalance());
+    assertEquals(150, stored.getBalance());
     assertEquals(UserRole.USER, stored.getRole());
   }
 }

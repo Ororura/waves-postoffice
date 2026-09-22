@@ -5,29 +5,26 @@ import com.ororura.domain.repository.ParcelRepository;
 import com.wavesenterprise.sdk.contract.api.state.ContractState;
 import com.wavesenterprise.sdk.contract.api.state.TypeReference;
 import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping;
-import java.util.List;
+import java.util.Optional;
 
 public final class ContractStateParcelRepository implements ParcelRepository {
-  private final Mapping<List<Parcel>> mapping;
+  private final Mapping<Parcel> mapping;
 
   public ContractStateParcelRepository(ContractState state) {
-    mapping = state.getMapping(new TypeReference<List<Parcel>>() {}, "PARCEL_MAPPING");
+    mapping = state.getMapping(new TypeReference<Parcel>() {}, "PARCEL_V2");
   }
 
   @Override
-  public List<Parcel> findAll() {
-    return mapping
-        .tryGet("_")
-        .orElseThrow(() -> new IllegalStateException("Посылки не инициализированы"));
+  public Optional<Parcel> findByTrackingNumber(String trackingNumber) {
+    if (trackingNumber == null || trackingNumber.isBlank()) return Optional.empty();
+    return mapping.tryGet(trackingNumber);
   }
 
   @Override
-  public boolean existsByTrackingNumber(String trackingNumber) {
-    return findAll().stream().anyMatch(parcel -> trackingNumber.equals(parcel.getTrackNumber()));
-  }
-
-  @Override
-  public void saveAll(List<Parcel> parcels) {
-    mapping.put("_", parcels);
+  public void save(Parcel parcel) {
+    if (parcel == null || parcel.getTrackNumber() == null || parcel.getTrackNumber().isBlank()) {
+      throw new IllegalArgumentException("Не указан трек-номер");
+    }
+    mapping.put(parcel.getTrackNumber(), parcel);
   }
 }
