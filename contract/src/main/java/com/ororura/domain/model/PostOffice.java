@@ -5,44 +5,50 @@ import java.util.HashMap;
 import java.util.List;
 
 public class PostOffice {
-    private int postNumber;
-    private String officeType;
-    private final HashMap<String, User> usersInOffice = new HashMap<>();
-    private final List<AcceptedParcel> acceptedParcel = new ArrayList<>();
+  private int postNumber;
+  private String officeType;
+  private final HashMap<String, User> usersInOffice = new HashMap<>();
+  private final List<AcceptedParcel> acceptedParcel = new ArrayList<>();
 
-    public PostOffice(int postNumber, String officeType) {
-        this.postNumber = postNumber;
-        this.officeType = officeType;
-    }
+  public PostOffice(int postNumber, String officeType) {
+    this.postNumber = postNumber;
+    this.officeType = officeType;
+  }
 
-    public PostOffice() {
-    }
+  public PostOffice() {}
 
-    public int getPostNumber() {
-        return postNumber;
-    }
+  public int getPostNumber() {
+    return postNumber;
+  }
 
-    public void setPostNumber(int postNumber) {
-        this.postNumber = postNumber;
-    }
+  public void setPostNumber(int postNumber) {
+    this.postNumber = postNumber;
+  }
 
-    public String getOfficeType() {
-        return officeType;
-    }
+  public String getOfficeType() {
+    return officeType;
+  }
 
-    public void setOfficeType(String officeType) {
-        this.officeType = officeType;
-    }
+  public void setOfficeType(String officeType) {
+    this.officeType = officeType;
+  }
 
-    public List<AcceptedParcel> getAcceptedParcel() {
-        return acceptedParcel;
-    }
+  public List<AcceptedParcel> getAcceptedParcel() {
+    return acceptedParcel;
+  }
 
-    public HashMap<String, User> getUsersInOffice() {
-        return usersInOffice;
-    }
+  public HashMap<String, User> getUsersInOffice() {
+    return usersInOffice;
+  }
 
-    public void addUser(User user) {
-        this.usersInOffice.put(user.getBlockchainAddress(), user);
+  public void addUser(User user) {
+    this.usersInOffice.put(user.getBlockchainAddress(), user);
+  }
+
+  public void acceptParcel(AcceptedParcel parcel) {
+    if (parcel == null || parcel.getParcel() == null || parcel.getUser() == null) {
+      throw new IllegalArgumentException("Некорректное почтовое отправление");
     }
+    acceptedParcel.add(parcel);
+  }
 }
